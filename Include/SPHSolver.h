@@ -28,20 +28,28 @@
 class SPHSolver
 {
 public:
-    SPHSolver(std::shared_ptr<ParticleSystemData>& particleData, const SimulationParameters& simParams) :
+    SPHSolver(std::shared_ptr<ParticleSystemData>& particleData, const std::shared_ptr<SimulationParameters>& simParams) :
         m_SimData(particleData), m_SimParams(simParams)
     {
-        m_CubicKernel.setRadius(simParams.kernelRadius);
-        m_SpikyKernel.setRadius(simParams.kernelRadius);
-        m_NearSpikyKernel.setRadius(1.5 * simParams.particleRadius);
-        m_Grid3D.setCellSize(simParams.kernelRadius);
+        m_CubicKernel.setRadius(simParams->kernelRadius);
+        m_SpikyKernel.setRadius(simParams->kernelRadius);
+        m_NearSpikyKernel.setRadius(1.5 * simParams->particleRadius);
+        m_SimData.m_Grid3D.setGrid(simParams->boxMin, simParams->boxMax, simParams->kernelRadius);
+        m_SimData.cellParticles.resize(m_SimData.m_Grid3D.getNumCells());
 
-        generateBoundaryParticles();
+        if(m_SimParams->bUseBoundaryParticles)
+            generateBoundaryParticles();
     }
 
-    void makeReady();
+    float advanceFrame();
+    void  makeReady();
+
+    unsigned int getNumParticles() { return static_cast<unsigned int>(m_SimData.particles.size()); }
+    Vec_Vec3<float>& getParticles() { return m_SimData.particles; }
+    Vec_Vec3<float>& getVelocity() { return m_SimData.velocity; }
 
 private:
+    void  collectParticlesToCells();
     void  advanceVelocity(float timeStep);
     void  moveParticles(float dt);
     float computeMaxVel();
@@ -59,9 +67,10 @@ private:
     ////////////////////////////////////////////////////////////////////////////////
     struct SimData
     {
-        SimData(std::shared_ptr<ParticleSystemData>& particleData) : particles(*particleData->getArray("Position")) {}
+        SimData(std::shared_ptr<ParticleSystemData>& particleData) : particles(*(reinterpret_cast<Vec_Vec3<float>*>(particleData->getArray("Position")))) {}
 
         Array3_VecUInt   cellParticles;
+        Grid3D<float>    m_Grid3D;
         Vec_Vec3<float>& particles;
         Vec_Vec3<float>  velocity;
 
@@ -76,13 +85,12 @@ private:
         std::vector<float> density;
     } m_SimData;
 
-    PrecomputedKernel<CubicKernel, 10000> m_CubicKernel;
-    PrecomputedKernel<SpikyKernel, 10000> m_SpikyKernel;
-    PrecomputedKernel<SpikyKernel, 10000> m_NearSpikyKernel;
-    Grid3D<float>                         m_Grid3D;
+    CubicKernel<float> m_CubicKernel;
+    CubicKernel<float> m_SpikyKernel;
+    CubicKernel<float> m_NearSpikyKernel;
 
     ////////////////////////////////////////////////////////////////////////////////
-    const SimulationParameters& m_SimParams;
+    std::shared_ptr<SimulationParameters> m_SimParams;
 };
 
 

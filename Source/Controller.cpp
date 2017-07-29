@@ -49,6 +49,25 @@ void Controller::setupGUI()
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+void Controller::updateSimParams(const std::shared_ptr<SimulationParameters>& simParams)
+{
+    simParams->numThreads        = m_cbNumThreads->currentIndex();
+    simParams->pressureStiffness = m_txtPressureStiffness->text().toFloat();
+    simParams->viscosity         = m_txtViscosity->text().toFloat();
+    simParams->stopTime          = m_txtStopTime->text().toFloat();
+}
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+void Controller::disableParameters(bool disable)
+{
+    m_cbNumThreads->setDisabled(disable);
+    m_cbSimulationScene->setDisabled(disable);
+    m_txtPressureStiffness->setDisabled(disable);
+    m_txtViscosity->setDisabled(disable);
+    m_txtStopTime->setDisabled(disable);
+}
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 void Controller::loadTextures()
 {
     ////////////////////////////////////////////////////////////////////////////////
@@ -91,17 +110,17 @@ void Controller::setupSimulationControllers(QVBoxLayout* ctrLayout)
     for(int i = 1; i <= 64; ++i)
         m_cbNumThreads->addItem(QString("%1").arg(i));
 
-    m_cbFluidScene = new QComboBox;
-    m_cbFluidScene->addItems(FluidSceneNames);
+    m_cbSimulationScene = new QComboBox;
+    m_cbSimulationScene->addItems(SimulationSceneNames);
 
-    m_PressureStiffness = new QLineEdit;
-    m_PressureStiffness->setText("50000");
+    m_txtPressureStiffness = new QLineEdit;
+    m_txtPressureStiffness->setText(QString("%1").arg(DEFAULT_PRESSURE_STIFFNESS));
 
-    m_Viscosity = new QLineEdit;
-    m_Viscosity->setText("0.0001");
+    m_txtViscosity = new QLineEdit;
+    m_txtViscosity->setText(QString("%1").arg(DEFAULT_VISCOSITY));
 
-    m_StopTime = new QLineEdit;
-    m_StopTime->setText("5000");
+    m_txtStopTime = new QLineEdit;
+    m_txtStopTime->setText("5000");
 
     ////////////////////////////////////////////////////////////////////////////////
     QGridLayout* simControllerLayout = new QGridLayout;
@@ -110,16 +129,16 @@ void Controller::setupSimulationControllers(QVBoxLayout* ctrLayout)
     simControllerLayout->addWidget(m_cbNumThreads,                     0, 1, 1, 2);
 
     simControllerLayout->addWidget(new QLabel("Scene: "),              1, 0, 1, 1);
-    simControllerLayout->addWidget(m_cbFluidScene,                     1, 1, 1, 2);
+    simControllerLayout->addWidget(m_cbSimulationScene,                1, 1, 1, 2);
 
     simControllerLayout->addWidget(new QLabel("Pressure Stiffness: "), 2, 0, 1, 1);
-    simControllerLayout->addWidget(m_PressureStiffness,                2, 1, 1, 2);
+    simControllerLayout->addWidget(m_txtPressureStiffness,             2, 1, 1, 2);
 
     simControllerLayout->addWidget(new QLabel("Viscosity: "),          3, 0, 1, 1);
-    simControllerLayout->addWidget(m_Viscosity,                        3, 1, 1, 2);
+    simControllerLayout->addWidget(m_txtViscosity,                     3, 1, 1, 2);
 
     simControllerLayout->addWidget(new QLabel("Stop time(ms): "),      4, 0, 1, 1);
-    simControllerLayout->addWidget(m_StopTime,                         4, 1, 1, 2);
+    simControllerLayout->addWidget(m_txtStopTime,                      4, 1, 1, 2);
 
 
     QGroupBox* grpSimControllers = new QGroupBox;

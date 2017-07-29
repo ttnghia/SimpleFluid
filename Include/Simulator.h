@@ -17,50 +17,62 @@
 
 #pragma once
 
-#include <Banana/TypeNames.h>
 #include <Banana/Timer.h>
 #include <Banana/Macros.h>
 
 #include <QObject>
 #include <QStringList>
 
+#include <future>
+
 #include <tbb/tbb.h>
 
 #include "Common.h"
 #include "SPHSolver.h"
+#include "SceneManager.h"
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 class Simulator : public QObject
 {
     Q_OBJECT
+
 public:
-    Simulator() : m_ParticleData(nullptr) {}
-    Simulator(std::shared_ptr<ParticleSystemData>& particleData) : m_ParticleData(particleData) {}
+    Simulator(const std::shared_ptr<ParticleSystemData>& particleData) : m_ParticleData(particleData)
+    {
+        m_SPHSolver    = std::make_unique<SPHSolver>(m_ParticleData, m_SimParams);
+        m_SceneManager = std::make_unique<SceneManager>(m_SimParams);
 
-    void                                       setParticleData(const std::shared_ptr<ParticleSystemData>& particleData);
-    const std::shared_ptr<ParticleSystemData>& getParticleDataObj();
+        m_ParticleData->setParticleRadius(m_SimParams->particleRadius);
+    }
 
-    void startSimulation(const std::shared_ptr<SimulationParameters>& simParams);
-    void doSimulation();
+    const std::shared_ptr<SimulationParameters>& getSimParams() { return m_SimParams; }
+
+    bool isRunning() { return !m_bStop; }
     void pause();
     void reset();
+    void startSimulation();
 
 public slots:
-    void createScene();
+    void doSimulation();
+    void changeScene(SimulationScenes::Scene scene);
+    void setupScene();
 
 signals:
-    void frameFinished();
+    void simulationFinished();
+    void systemTimeChanged(float time);
     void numParticleChanged(unsigned int numParticles);
-    void currentFrameChanged(int currentFrame);
-    void logChanged(const QString& logStr);
-    void simInfoChanged(const QStringList& simInfo);
+    void particleChanged();
+//    void currentFrameChanged(int currentFrame);
+//    void logChanged(const QString& logStr);
+//    void simInfoChanged(const QStringList& simInfo);
 
 protected:
-    bool                                  m_bPause    = false;
-    bool                                  m_bStop     = false;
-    std::shared_ptr<SimulationParameters> m_SimParams = nullptr;
-    std::shared_ptr<ParticleSystemData>   m_ParticleData;
-    Timer                                 m_Timer;
+    volatile bool                       m_bStop        = true;
+    std::shared_ptr<ParticleSystemData> m_ParticleData = nullptr;
 
-    std::unique_ptr<SPHSolver> m_SPHSolver = nullptr;
+    float                                 m_SimTime      = 0;
+    std::unique_ptr<SceneManager>         m_SceneManager = nullptr;
+    std::unique_ptr<SPHSolver>            m_SPHSolver    = nullptr;
+    std::shared_ptr<SimulationParameters> m_SimParams    = std::make_shared<SimulationParameters>();
+    std::future<void>                     m_SimulationFutureObj;
 };

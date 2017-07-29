@@ -24,6 +24,7 @@
 #include <QtAppHelpers/OpenGLMainWindow.h>
 #include <QtAppHelpers/BrowsePathWidget.h>
 #include <QtAppHelpers/OpenGLWidgetTestRender.h>
+#include <QtAppHelpers/BusyBar.h>
 
 #include <QEvent>
 #include <memory>
@@ -39,19 +40,27 @@ public:
 protected:
     virtual void instantiateOpenGLWidget();
     virtual bool processKeyPressEvent(QKeyEvent* event) override;
+    virtual void showEvent(QShowEvent* ev);
+
+    void updateStatusSimulation(const QString& status);
+    void updateStatusMemoryUsage();
 
 public slots:
-    void updateStatusNumParticles();
+    void updateStatusNumParticles(unsigned int numParticles);
+    void updateStatusSimulationTime(float time);
 
 private:
     void setupRenderWidgets();
     void setupStatusBar();
     void connectWidgets();
 
-    std::unique_ptr<Simulator> m_Simulator = std::make_unique<Simulator>();
     ////////////////////////////////////////////////////////////////////////////////
-    FluidRenderWidget* m_RenderWidget          = nullptr;
-    Controller*        m_Controller            = nullptr;
-    QLabel*            m_lblStatusNumParticles = nullptr;
-    QLabel*            m_lblStatusSimInfo      = nullptr;
+    std::unique_ptr<Simulator> m_Simulator             = nullptr;
+    FluidRenderWidget*         m_RenderWidget          = nullptr;
+    Controller*                m_Controller            = nullptr;
+    QLabel*                    m_lblStatusNumParticles = nullptr;
+    QLabel*                    m_lblStatusSimInfo      = nullptr;
+    QLabel*                    m_lblStatusMemoryUsage  = nullptr;
+    QLabel*                    m_lblStatusSimTime      = nullptr;
+    BusyBar*                   m_prBusy;
 };

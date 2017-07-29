@@ -18,16 +18,16 @@
 #pragma once
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-#define DEFAULT_CAMERA_POSITION glm::vec3(-4.0, 4.0, -3.0)
-#define DEFAULT_CAMERA_FOCUS    glm::vec3(0, 1, 0)
+#define DEFAULT_CAMERA_POSITION glm::vec3(-3.0, 0.8, 0.0)
+#define DEFAULT_CAMERA_FOCUS    glm::vec3(0, -0.2, 0)
 
-#define CUSTOM_PARTICLE_MATERIAL             \
-    {                                        \
-        glm::vec4(0.2 * 0.2),                \
-        glm::vec4(0.69, 0.957, 0.259, 1.00), \
-        glm::vec4(1),                        \
-        250.0,                               \
-        std::string("ParticleMaterial")      \
+#define CUSTOM_PARTICLE_MATERIAL         \
+    {                                    \
+        glm::vec4(0.2 * 0.2),            \
+        glm::vec4(1.0, 0.63, 0.3, 1.00), \
+        glm::vec4(1),                    \
+        250.0,                           \
+        std::string("ParticleMaterial")  \
     }
 
 
@@ -46,18 +46,18 @@
 #define DEFAULT_FLOOR_SIZE 10
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-class FluidScenes
+class SimulationScenes
 {
 public:
-    enum
+    enum Scene
     {
-        SphereDrop = 0,
-        CubeDrop,
+        CubeDrop = 0,
+        SphereDrop,
         Dambreak,
         DoubleDambreak
     };
 };
-#define FluidSceneNames { QString("SphereDrop"), QString("CubeDrop"), QString("Dambreak"), QString("DoubleDambreak") }
+#define SimulationSceneNames { QString("CubeDrop"), QString("SphereDrop"), QString("Dambreak"), QString("DoubleDambreak") }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 class ParticleColorMode
@@ -99,48 +99,56 @@ inline QStringList getTextureFiles(QString texType)
 // SimulationParameters
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+#include <Banana/TypeNames.h>
 #include <Banana/Data/ParticleSystemData.h>
 #include <memory>
 #include <QVector3D>
 
-struct SimulationParameters
+#define DEFAULT_PRESSURE_STIFFNESS   50000.0f
+#define DEFAULT_NEAR_FORCE_STIFFNESS 50000.0f
+#define DEFAULT_VISCOSITY            0.0001
+
+class SimulationParameters
 {
-    SimulationParameters()
-    {
-        stopTime        = 5.0;
-        defaultTimestep = 1.0e-4;
+public:
+    SimulationParameters() { updateParams(); }
 
-        boxMin = QVector3D(0.0f, 0.0f, 0.0f);
-        boxMax = QVector3D(1.0f, 1.0f, 1.0f);
+    SimulationScenes::Scene scene = SimulationScenes::CubeDrop;
 
-        particleRadius    = 1.0f;
-        pressureStiffness = 50000;
-        viscosity         = 1e-4;
-    }
+    int   numThreads      = 0;
+    float stopTime        = 5.0;
+    float defaultTimestep = 1.0e-4;
 
-    float stopTime;
-    float defaultTimestep;
+    Vec3<float> boxMin = Vec3<float>(-1.0f, -1.0f, -1.0f);
+    Vec3<float> boxMax = Vec3<float>(1.0f, 1.0f, 1.0f);
 
-    QVector3D boxMin;
-    QVector3D boxMax;
+    float pressureStiffness  = DEFAULT_PRESSURE_STIFFNESS;
+    float nearForceStiffness = DEFAULT_NEAR_FORCE_STIFFNESS;
+    float viscosity          = DEFAULT_VISCOSITY;
+    float kernelRadius       = 1.0f / 16.0f;
 
+    bool bCorrectDensity        = false;
+    bool bUseBoundaryParticles  = false;
+    bool bUseRepulsiveForce     = false;
+    bool bUseAttractivePressure = false;
+
+    float boundaryRestitution     = 0.9f;
+    float attractivePressureRatio = 0.1f;
+    float restDensity             = 1000.0f;
+
+    // the following need to be computed
     float particleRadius;
-    float pressureStiffness;
-    float nearForceStiffness;
-    float viscosity;
-
-    float kernelRadius;
     float kernelRadiusSqr;
-    bool  bCorrectDensity;
-    bool  bUseBoundaryParticles;
-    bool  bUseRepulsiveForce;
-    bool  bUseAttractivePressure;
-
-    float restDensity;
+    float nearKernelRadius;
     float restDensitySqr;
 
-    float near_kernel_support_coeff;
-    float attractive_repulsive_pressure_ratio;
+private:
+    void updateParams()
+    {
+        particleRadius   = kernelRadius / 4.0f;
+        kernelRadiusSqr  = kernelRadius * kernelRadius;
+        nearKernelRadius = particleRadius * 2.5f;
 
-    float boundaryRestitution;
+        restDensitySqr = restDensity * restDensity;
+    }
 };

@@ -26,6 +26,8 @@
 #include <QtAppHelpers/EnhancedSlider.h>
 #include <QtAppHelpers/PointLightEditor.h>
 
+#include "Common.h"
+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 class Controller : public QWidget
 {
@@ -38,6 +40,9 @@ public:
         setupGUI();
     }
 
+    void updateSimParams(const std::shared_ptr<SimulationParameters>& simParams);
+    void disableParameters(bool disable);
+
 public slots:
     void loadTextures();
 
@@ -49,11 +54,11 @@ private:
 
     ////////////////////////////////////////////////////////////////////////////////
     QComboBox* m_cbNumThreads;
-    QComboBox* m_cbFluidScene;
+    QComboBox* m_cbSimulationScene;
 
-    QLineEdit* m_PressureStiffness;
-    QLineEdit* m_Viscosity;
-    QLineEdit* m_StopTime;
+    QLineEdit* m_txtPressureStiffness;
+    QLineEdit* m_txtViscosity;
+    QLineEdit* m_txtStopTime;
 
     QSignalMapper* m_smParticleColorMode;
 

@@ -27,7 +27,8 @@ HEADERS += \
     Include/PCGSolver.h \
     Include/SparseMatrix.h \
     Include/Simulator.h \
-    Include/SPHKernels.h
+    Include/SPHKernels.h \
+    Include/SceneManager.h
 
 SOURCES += \
     Source/Controller.cpp \
@@ -35,7 +36,8 @@ SOURCES += \
     Source/Main.cpp \
     Source/MainWindow.cpp \
     Source/SPHSolver.cpp \
-    Source/Simulator.cpp
+    Source/Simulator.cpp \
+    Source/SceneManager.cpp
 
 RESOURCES += \
     Shader.qrc

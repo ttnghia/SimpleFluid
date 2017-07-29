@@ -23,6 +23,8 @@ FluidRenderWidget::FluidRenderWidget(QWidget* parent) : OpenGLWidget(parent)
 {
     m_DefaultSize = QSize(1200, 1000);
     setCamera(DEFAULT_CAMERA_POSITION, DEFAULT_CAMERA_FOCUS);
+
+    initParticleDataObj();
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -54,7 +56,7 @@ void FluidRenderWidget::initOpenGL()
     initRDataBox();
     initRDataParticle();
 
-    initParticleDataObj();
+    updateParticleData();
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -138,7 +140,7 @@ void FluidRenderWidget::setFloorTexture(int texIndex)
 
 void FluidRenderWidget::setFloorSize(int size)
 {
-    m_PlaneRender->transform(glm::vec3(0), glm::vec3(static_cast<float>(size)));
+    m_PlaneRender->transform(glm::vec3(0, -1.01f, 0), glm::vec3(static_cast<float>(size)));
     m_PlaneRender->scaleTexCoord(static_cast<float>(size), static_cast<float>(size));
 }
 
@@ -153,7 +155,7 @@ void FluidRenderWidget::initRDataFloor()
     Q_ASSERT(m_UBufferCamData != nullptr && m_Lights != nullptr);
 
     m_PlaneRender = std::make_unique<PlaneRender>(m_Camera, m_Lights, QDir::currentPath() + "/Textures/Floor/", m_UBufferCamData);
-    m_PlaneRender->transform(glm::vec3(0, -0.01, 0), glm::vec3(10));
+    m_PlaneRender->transform(glm::vec3(0, -1.01, 0), glm::vec3(10));
     m_PlaneRender->scaleTexCoord(DEFAULT_FLOOR_SIZE, DEFAULT_FLOOR_SIZE);
     m_PlaneRender->setAllowNonTextureRender(false);
 }
@@ -170,7 +172,8 @@ void FluidRenderWidget::initRDataBox()
 {
     Q_ASSERT(m_UBufferCamData != nullptr);
     m_WireFrameBoxRender = std::make_unique<WireFrameBoxRender>(m_Camera, m_UBufferCamData);
-    m_WireFrameBoxRender->setBox(glm::vec3(-1, 0, -1), glm::vec3(1, 2, 1));
+    m_WireFrameBoxRender->setBox(glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(1.0f, 1.0f, 1.0f));
+    m_WireFrameBoxRender->setColor(glm::vec3(1.0, 1.0, 0));
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -340,13 +343,14 @@ void FluidRenderWidget::initParticleDataObj()
     Q_ASSERT(m_ParticleData != nullptr);
     m_ParticleData->setUInt("DataFrame",     0);
     m_ParticleData->setUInt("FrameExported", 0);
+    m_ParticleData->addArray<GLfloat, 3>("Position");
 
+#if 0
     const int     sizeXYZ = 20;
     const GLfloat step    = 2.0 / static_cast<GLfloat>(sizeXYZ - 1);
     m_ParticleData->setNumParticles(sizeXYZ * sizeXYZ * sizeXYZ);
     m_ParticleData->setParticleRadius(0.5 * step * 0.95);
 
-    m_ParticleData->addArray<GLfloat, 3>("Position");
     GLfloat*      dataPtr    = reinterpret_cast<GLfloat*>(m_ParticleData->getArray("Position")->data());
     int           p          = 0;
     const GLfloat randomness = 0.5;
@@ -363,13 +367,12 @@ void FluidRenderWidget::initParticleDataObj()
             }
         }
     }
+#endif
 
     m_ParticleData->addArray<GLfloat, 3>("ColorRandom");
     m_ParticleData->addArray<GLfloat, 3>("ColorRamp");
     m_ParticleData->setUInt("ColorRandomReady", 0);
     m_ParticleData->setUInt("ColorRampReady",   0);
-
-    updateParticleData();
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+

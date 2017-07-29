@@ -72,19 +72,19 @@ public:
         return res;
     }
 
-    Real W(const Vec3& r)
+    Real W(const Vec3<Real>& r)
     {
         return W(glm::length(r));
     }
 
-    Vec3 gradW(const Vec3& r)
+    Vec3<Real> gradW(const Vec3<Real>& r)
     {
-        Vec3       res = Vec3<Real>(0);
+        Vec3<Real> res = Vec3<Real>(0);
         const Real rl  = glm::length(r);
         const Real q   = rl / m_radius;
         if(q <= 1.0 && rl > 1.0e-6)
         {
-            const Vec3 gradq = r * ((Real)1.0 / (rl * m_radius));
+            const Vec3<Real> gradq = r * ((Real)1.0 / (rl * m_radius));
             if(q <= 0.5)
             {
                 res = m_l * q * ((Real)3.0 * q - (Real)2.0) * gradq;
@@ -149,7 +149,7 @@ public:
         return res;
     }
 
-    Real W(const Vec3& r)
+    Real W(const Vec3<Real>& r)
     {
         Real       res     = 0.0;
         const Real r2      = glm::length2(r);
@@ -165,9 +165,9 @@ public:
      * grad(W(r,h)) = r(-945/(32 pi h^9))(h^2-|r|^2)^2
      *              = r(-945/(32 pi h^9))(h^2-r*r)^2
      */
-    Vec3 gradW(const Vec3& r)
+    Vec3<Real> gradW(const Vec3<Real>& r)
     {
-        Vec3       res     = Vec3<Real>(0);
+        Vec3<Real> res     = Vec3<Real>(0);
         const Real r2      = glm::length2(r);
         const Real radius2 = m_radius * m_radius;
         if(r2 <= radius2)
@@ -183,7 +183,7 @@ public:
      * laplacian(W(r,h)) = (-945/(32 pi h^9))(h^2-|r|^2)(-7|r|^2+3h^2)
      *                   = (-945/(32 pi h^9))(h^2-r*r)(3 h^2-7 r*r)
      */
-    Real laplacianW(const Vec3& r)
+    Real laplacianW(const Vec3<Real>& r)
     {
         Real       res     = 0;
         const Real r2      = glm::length2(r);
@@ -247,7 +247,7 @@ public:
         return res;
     }
 
-    Real W(const Vec3& r)
+    Real W(const Vec3<Real>& r)
     {
         Real       res     = 0.0;
         const Real r2      = glm::length2(r);
@@ -263,9 +263,9 @@ public:
     /**
      * grad(W(r,h)) = -r(45/(pi*h^6) * (h-r)^2)
      */
-    Vec3 gradW(const Vec3& r)
+    Vec3<Real> gradW(const Vec3<Real>& r)
     {
-        Vec3       res     = Vec3<Real>(0);
+        Vec3<Real> res     = Vec3<Real>(0);
         const Real r2      = glm::length2(r);
         const Real radius2 = m_radius * m_radius;
         if(r2 <= radius2)
@@ -332,7 +332,7 @@ public:
         return res;
     }
 
-    Real W(const Vec3& r)
+    Real W(const Vec3<Real>& r)
     {
         Real       res     = 0.0;
         const Real r2      = glm::length2(r);
@@ -395,7 +395,7 @@ public:
         return res;
     }
 
-    Real W(const Vec3& r)
+    Real W(const Vec3<Real>& r)
     {
         Real       res     = 0.0;
         const Real r2      = glm::length2(r);
@@ -406,90 +406,6 @@ public:
             if(r > 0.5 * m_radius)
                 res = m_k * pow(-4.0 * r2 / m_radius + 6.0 * r - 2.0 * m_radius, 0.25);
         }
-        return res;
-    }
-
-    Real W_zero()
-    {
-        return m_W_zero;
-    }
-};
-
-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-template<class Real, class KernelType, unsigned int resolution = 1000u>
-class PrecomputedKernel
-{
-protected:
-    KernelType kernel;
-    Real       m_W[resolution];
-    Real       m_gradW[resolution + 1];
-    Real       m_radius;
-    Real       m_radius2;
-    Real       m_invStepSize;
-    Real       m_W_zero;
-public:
-    Real getRadius()
-    {
-        return m_radius;
-    }
-
-    void setRadius(Real val)
-    {
-        m_radius  = val;
-        m_radius2 = val * val;
-        kernel.setRadius(val);
-        const Real stepSize = m_radius / (Real)resolution;
-        m_invStepSize = 1.0 / stepSize;
-        for(unsigned int i = 0; i < resolution; i++)
-        {
-            const Real posX = stepSize * (Real)i;               // Store kernel values in the middle of an interval
-            m_W[i] = kernel.W(posX);
-            if(posX > 1.0e-6)
-                m_gradW[i] = kernel.gradW(Vec3<Real>(posX, 0.0, 0.0))[0] / posX;
-            else
-                m_gradW[i] = 0.0;
-        }
-        m_gradW[resolution] = 0.0;
-        m_W_zero            = W(0.0);
-    }
-
-public:
-    Real W(const Vec3& r)
-    {
-        Real       res = 0.0;
-        const Real r2  = glm::length2(r);
-        if(r2 <= m_radius2)
-        {
-            const Real         r   = sqrt(r2);
-            const unsigned int pos = std::min<unsigned int>((unsigned int)(r * m_invStepSize), resolution);
-            res = m_W[pos];
-        }
-        return res;
-    }
-
-    Real W(const Real r)
-    {
-        Real res = 0.0;
-        if(r <= m_radius)
-        {
-            const unsigned int pos = std::min<unsigned int>((unsigned int)(r * m_invStepSize), resolution);
-            res = m_W[pos];
-        }
-        return res;
-    }
-
-    Vec3 gradW(const Vec3& r)
-    {
-        Vec3       res = Vec3<Real>(0);
-        const Real r2  = glm::length2(r);
-        if(r2 <= m_radius2)
-        {
-            const Real         rl  = sqrt(r2);
-            const unsigned int pos = std::min<unsigned int>((unsigned int)(rl * m_invStepSize), resolution);
-            res = m_gradW[pos] * r;
-        }
-
         return res;
     }
 
