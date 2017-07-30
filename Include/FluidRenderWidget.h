@@ -31,6 +31,7 @@
 #include <QtAppHelpers/QtAppShaderProgram.h>
 #include <QtAppHelpers/QtAppMacros.h>
 #include <QtAppHelpers/OpenGLWidget.h>
+#include <QtAppHelpers/EnhancedMessageBox.h>
 
 #include <map>
 #include <memory>

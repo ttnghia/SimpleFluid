@@ -387,7 +387,13 @@ void FluidRenderWidget::reloadTextures()
     doneCurrent();
 
     ////////////////////////////////////////////////////////////////////////////////
-    QMessageBox::information(this, "Info", "Textures reloaded!");
+    EnhancedMessageBox msgBox(this);
+    msgBox.setAutoCloseTimeout(2000);
+    msgBox.setText("Textures reloaded!");
+    msgBox.setIcon(QMessageBox::Information);
+    msgBox.setStandardButtons(QMessageBox::Ok);
+    msgBox.setAutoClose(true);
+    msgBox.exec();
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
