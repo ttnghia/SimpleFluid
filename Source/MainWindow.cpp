@@ -42,12 +42,18 @@ MainWindow::MainWindow(QWidget* parent) : OpenGLMainWindow(parent)
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 void MainWindow::showEvent(QShowEvent* ev)
 {
-    Q_ASSERT(m_Simulator != nullptr);
-
     QMainWindow::showEvent(ev);
-    m_Simulator->setupScene();
-    updateStatusMemoryUsage();
-    updateStatusSimulationTime(0);
+
+    static bool showed = false;
+    if(!showed)
+    {
+        showed = true;
+
+        Q_ASSERT(m_Simulator != nullptr);
+        m_Simulator->setupScene();
+        updateStatusMemoryUsage();
+        updateStatusSimulationTime(0);
+    }
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -96,7 +102,7 @@ void MainWindow::updateStatusNumParticles(unsigned int numParticles)
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 void MainWindow::updateStatusSimulationTime(float time)
 {
-    m_lblStatusSimTime->setText(QString("System time: %1 (s)").arg(QString::fromStdString(NumberHelpers::formatWithCommas(time))));
+    m_lblStatusSimTime->setText(QString("System time: %1 (s)").arg(QString::fromStdString(NumberHelpers::formatWithCommas(time, 5))));
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -205,6 +211,7 @@ void MainWindow::connectWidgets()
     connect(m_Simulator.get(), &Simulator::simulationFinished, [&]
     {
         m_Controller->m_btnStartStopSimulation->setText(QString("Start"));
+        m_prBusy->reset();
     });
 
     connect(m_Simulator.get(), &Simulator::numParticleChanged, this,           &MainWindow::updateStatusNumParticles);

@@ -174,6 +174,9 @@ void SPHSolver::advanceVelocity(float timeStep)
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 void SPHSolver::moveParticles(float dt)
 {
+    const static Vec3<float> bMin = m_SimParams->boxMin + Vec3<float>(m_SimParams->particleRadius);
+    const static Vec3<float> bMax = m_SimParams->boxMax - Vec3<float>(m_SimParams->particleRadius);
+
     tbb::parallel_for(tbb::blocked_range<size_t>(0, m_SimData.particles.size()),
                       [&, dt](tbb::blocked_range<size_t> r)
                       {
@@ -186,15 +189,15 @@ void SPHSolver::moveParticles(float dt)
 
                               for(int l = 0; l < 3; ++l)
                               {
-                                  if(ppos[l] < m_SimParams->boxMin[l])
+                                  if(ppos[l] < bMin[l])
                                   {
-                                      ppos[l] = m_SimParams->boxMin[l];
+                                      ppos[l] = bMin[l];
                                       pvel[l] *= -m_SimParams->boundaryRestitution;
                                       velChanged = true;
                                   }
-                                  else if(ppos[l] > m_SimParams->boxMax[l])
+                                  else if(ppos[l] > bMax[l])
                                   {
-                                      ppos[l] = m_SimParams->boxMax[l];
+                                      ppos[l] = bMax[l];
                                       pvel[l] *= -m_SimParams->boundaryRestitution;
                                       velChanged = true;
                                   }

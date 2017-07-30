@@ -45,7 +45,11 @@ void Simulator::doSimulation()
         emit particleChanged();
     }
 
-    emit simulationFinished();
+    if(!m_bStop)
+    {
+        m_bStop = true;
+        emit simulationFinished();
+    }
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+

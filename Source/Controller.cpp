@@ -120,7 +120,7 @@ void Controller::setupSimulationControllers(QVBoxLayout* ctrLayout)
     m_txtViscosity->setText(QString("%1").arg(DEFAULT_VISCOSITY));
 
     m_txtStopTime = new QLineEdit;
-    m_txtStopTime->setText("5000");
+    m_txtStopTime->setText("5.0");
 
     ////////////////////////////////////////////////////////////////////////////////
     QGridLayout* simControllerLayout = new QGridLayout;
@@ -137,7 +137,7 @@ void Controller::setupSimulationControllers(QVBoxLayout* ctrLayout)
     simControllerLayout->addWidget(new QLabel("Viscosity: "),          3, 0, 1, 1);
     simControllerLayout->addWidget(m_txtViscosity,                     3, 1, 1, 2);
 
-    simControllerLayout->addWidget(new QLabel("Stop time(ms): "),      4, 0, 1, 1);
+    simControllerLayout->addWidget(new QLabel("Stop time(s): "),       4, 0, 1, 1);
     simControllerLayout->addWidget(m_txtStopTime,                      4, 1, 1, 2);
 
 

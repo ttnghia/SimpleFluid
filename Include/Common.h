@@ -106,7 +106,7 @@ inline QStringList getTextureFiles(QString texType)
 
 #define DEFAULT_PRESSURE_STIFFNESS   50000.0f
 #define DEFAULT_NEAR_FORCE_STIFFNESS 50000.0f
-#define DEFAULT_VISCOSITY            0.0001
+#define DEFAULT_VISCOSITY            0.05
 
 class SimulationParameters
 {
@@ -132,7 +132,7 @@ public:
     bool bUseRepulsiveForce     = false;
     bool bUseAttractivePressure = false;
 
-    float boundaryRestitution     = 0.9f;
+    float boundaryRestitution     = 0.1f;
     float attractivePressureRatio = 0.1f;
     float restDensity             = 1000.0f;
 
