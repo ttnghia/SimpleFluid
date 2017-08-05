@@ -67,8 +67,9 @@ signals:
 //    void simInfoChanged(const QStringList& simInfo);
 
 protected:
-    volatile bool                       m_bStop        = true;
-    std::shared_ptr<ParticleSystemData> m_ParticleData = nullptr;
+    std::unique_ptr<tbb::task_scheduler_init> m_ThreadInit   = nullptr;
+    volatile bool                             m_bStop        = true;
+    std::shared_ptr<ParticleSystemData>       m_ParticleData = nullptr;
 
     float                                 m_SimTime      = 0;
     std::unique_ptr<SceneManager>         m_SceneManager = nullptr;

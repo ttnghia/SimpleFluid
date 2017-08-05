@@ -62,5 +62,5 @@ private:
     QLabel*                    m_lblStatusSimInfo      = nullptr;
     QLabel*                    m_lblStatusMemoryUsage  = nullptr;
     QLabel*                    m_lblStatusSimTime      = nullptr;
-    BusyBar*                   m_prBusy;
+    BusyBar*                   m_BusyBar;
 };

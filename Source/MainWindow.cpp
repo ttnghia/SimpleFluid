@@ -29,7 +29,7 @@ MainWindow::MainWindow(QWidget* parent) : OpenGLMainWindow(parent)
     setupStatusBar();
     setArthurStyle();
 
-    setWindowTitle("Simple SPH Fluid Simulation");
+    setWindowTitle("Simple Fluid Simulation");
     setFocusPolicy(Qt::StrongFocus);
     showFPS(false);
     showCameraPosition(false);
@@ -54,17 +54,6 @@ void MainWindow::showEvent(QShowEvent* ev)
         updateStatusMemoryUsage();
         updateStatusSimulationTime(0);
     }
-}
-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-void MainWindow::updateStatusSimulation(const QString& status)
-{
-    m_lblStatusSimInfo->setText(status);
-}
-
-void MainWindow::updateStatusMemoryUsage()
-{
-    m_lblStatusMemoryUsage->setText(QString("Memory usage: %1 (MBs)").arg(QString::fromStdString(NumberHelpers::formatWithCommas(getCurrentRSS() / 1048576.0))));
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -94,6 +83,16 @@ bool MainWindow::processKeyPressEvent(QKeyEvent* event)
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+void MainWindow::updateStatusSimulation(const QString& status)
+{
+    m_lblStatusSimInfo->setText(status);
+}
+
+void MainWindow::updateStatusMemoryUsage()
+{
+    m_lblStatusMemoryUsage->setText(QString("Memory usage: %1 (MBs)").arg(QString::fromStdString(NumberHelpers::formatWithCommas(getCurrentRSS() / 1048576.0))));
+}
+
 void MainWindow::updateStatusNumParticles(unsigned int numParticles)
 {
     m_lblStatusNumParticles->setText(QString("Num. particles: %1").arg(QString::fromStdString(NumberHelpers::formatWithCommas(numParticles))));
@@ -122,9 +121,9 @@ void MainWindow::setupRenderWidgets()
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 void MainWindow::setupStatusBar()
 {
-    m_prBusy = new BusyBar(this, BusyBar::Cycle, 20);
+    m_BusyBar = new BusyBar(this, BusyBar::Cycle, 20);
 //    m_prBusy->setBusy(true);
-    statusBar()->addPermanentWidget(m_prBusy);
+    statusBar()->addPermanentWidget(m_BusyBar);
 
     m_lblStatusSimInfo = new QLabel(this);
     m_lblStatusSimInfo->setMargin(5);
@@ -196,7 +195,7 @@ void MainWindow::connectWidgets()
 
         m_Controller->m_btnStartStopSimulation->setText(!isRunning ? QString("Pause") : QString("Resume"));
         m_Controller->disableParameters(!isRunning);
-        m_prBusy->setBusy(!isRunning);
+        m_BusyBar->setBusy(!isRunning);
     });
 
     connect(m_Controller->m_btnResetSimulation, &QPushButton::clicked, [&]
@@ -205,13 +204,13 @@ void MainWindow::connectWidgets()
         m_Controller->m_btnStartStopSimulation->setText(QString("Start"));
         updateStatusSimulation("Ready");
         m_Controller->disableParameters(false);
-        m_prBusy->reset();
+        m_BusyBar->reset();
     });
 
     connect(m_Simulator.get(), &Simulator::simulationFinished, [&]
     {
         m_Controller->m_btnStartStopSimulation->setText(QString("Start"));
-        m_prBusy->reset();
+        m_BusyBar->reset();
     });
 
     connect(m_Simulator.get(), &Simulator::numParticleChanged, this,           &MainWindow::updateStatusNumParticles);

@@ -114,10 +114,10 @@ void Controller::setupSimulationControllers(QVBoxLayout* ctrLayout)
     m_cbSimulationScene->addItems(SimulationSceneNames);
 
     m_txtPressureStiffness = new QLineEdit;
-    m_txtPressureStiffness->setText(QString("%1").arg(DEFAULT_PRESSURE_STIFFNESS));
+    m_txtPressureStiffness->setText(QString("%1").arg(DEFAULT_SPH_PRESSURE_STIFFNESS));
 
     m_txtViscosity = new QLineEdit;
-    m_txtViscosity->setText(QString("%1").arg(DEFAULT_VISCOSITY));
+    m_txtViscosity->setText(QString("%1").arg(DEFAULT_SPH_VISCOSITY));
 
     m_txtStopTime = new QLineEdit;
     m_txtStopTime->setText("5.0");

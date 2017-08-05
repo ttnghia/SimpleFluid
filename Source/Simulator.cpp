@@ -35,6 +35,9 @@ void Simulator::doSimulation()
     Q_ASSERT(m_SimParams != nullptr);
     Q_ASSERT(m_ParticleData != nullptr);
 
+    m_ThreadInit.reset();
+    m_ThreadInit = std::make_unique<tbb::task_scheduler_init>(m_SimParams->numThreads == 0 ? tbb::task_scheduler_init::automatic : m_SimParams->numThreads);
+
     ////////////////////////////////////////////////////////////////////////////////
     m_SPHSolver->makeReady();
 

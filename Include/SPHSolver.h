@@ -25,11 +25,11 @@
 #include "SPHKernels.h"
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-class SPHSolver
+class SPHSolver : public FluidSolver
 {
 public:
     SPHSolver(std::shared_ptr<ParticleSystemData>& particleData, const std::shared_ptr<SimulationParameters>& simParams) :
-        m_SimData(particleData), m_SimParams(simParams)
+        FluidSolver(simParams), m_SimData(particleData)
     {
         m_CubicKernel.setRadius(simParams->kernelRadius);
         m_SpikyKernel.setRadius(simParams->kernelRadius);
@@ -41,12 +41,12 @@ public:
             generateBoundaryParticles();
     }
 
-    float advanceFrame();
-    void  makeReady();
+    virtual float advanceFrame() override;
+    virtual void  makeReady() override;
 
-    unsigned int getNumParticles() { return static_cast<unsigned int>(m_SimData.particles.size()); }
-    Vec_Vec3<float>& getParticles() { return m_SimData.particles; }
-    Vec_Vec3<float>& getVelocity() { return m_SimData.velocity; }
+    virtual unsigned int getNumParticles() override { return static_cast<unsigned int>(m_SimData.particles.size()); }
+    virtual Vec_Vec3<float>& getParticles() override { return m_SimData.particles; }
+    virtual Vec_Vec3<float>& getVelocity() override { return m_SimData.velocity; }
 
 private:
     void  collectParticlesToCells();
@@ -88,9 +88,6 @@ private:
     CubicKernel<float> m_CubicKernel;
     CubicKernel<float> m_SpikyKernel;
     CubicKernel<float> m_NearSpikyKernel;
-
-    ////////////////////////////////////////////////////////////////////////////////
-    std::shared_ptr<SimulationParameters> m_SimParams;
 };
 
 

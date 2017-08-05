@@ -104,9 +104,15 @@ inline QStringList getTextureFiles(QString texType)
 #include <memory>
 #include <QVector3D>
 
-#define DEFAULT_PRESSURE_STIFFNESS   50000.0f
-#define DEFAULT_NEAR_FORCE_STIFFNESS 50000.0f
-#define DEFAULT_VISCOSITY            0.05
+enum class FLIPInterpolationKernel
+{
+    LinearKernel,
+    CubicSplineKernel
+};
+
+#define DEFAULT_SPH_PRESSURE_STIFFNESS   50000.0f
+#define DEFAULT_SPH_NEAR_FORCE_STIFFNESS 50000.0f
+#define DEFAULT_SPH_VISCOSITY            0.05
 
 class SimulationParameters
 {
@@ -122,9 +128,9 @@ public:
     Vec3<float> boxMin = Vec3<float>(-1.0f, -1.0f, -1.0f);
     Vec3<float> boxMax = Vec3<float>(1.0f, 1.0f, 1.0f);
 
-    float pressureStiffness  = DEFAULT_PRESSURE_STIFFNESS;
-    float nearForceStiffness = DEFAULT_NEAR_FORCE_STIFFNESS;
-    float viscosity          = DEFAULT_VISCOSITY;
+    float pressureStiffness  = DEFAULT_SPH_PRESSURE_STIFFNESS;
+    float nearForceStiffness = DEFAULT_SPH_NEAR_FORCE_STIFFNESS;
+    float viscosity          = DEFAULT_SPH_VISCOSITY;
     float kernelRadius       = 1.0f / 16.0f;
 
     bool bCorrectDensity        = false;
@@ -151,4 +157,21 @@ private:
 
         restDensitySqr = restDensity * restDensity;
     }
+};
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+class FluidSolver
+{
+public:
+    FluidSolver(const std::shared_ptr<SimulationParameters>& simParams) : m_SimParams(simParams) {}
+
+    virtual float advanceFrame() = 0;
+    virtual void  makeReady()    = 0;
+
+    virtual unsigned int     getNumParticles() = 0;
+    virtual Vec_Vec3<float>& getParticles()    = 0;
+    virtual Vec_Vec3<float>& getVelocity()     = 0;
+
+protected:
+    std::shared_ptr<SimulationParameters> m_SimParams;
 };

@@ -323,6 +323,7 @@ void SPHSolver::computeDensity()
                               pden *= CUBE(2.0 * m_SimParams->particleRadius) * 1000;
 
                               m_SimData.density[p] = pden < 1.0 ? 0 : fmin(fmax(pden, min_density), max_density);
+                              qDebug() << p << m_SimData.density[p];
                           }
                       }); // end parallel_for
 }
