@@ -51,13 +51,13 @@ class SimulationScenes
 public:
     enum Scene
     {
-        CubeDrop = 0,
-        SphereDrop,
+        SphereDrop=0,
+        CubeDrop,
         Dambreak,
         DoubleDambreak
     };
 };
-#define SimulationSceneNames { QString("CubeDrop"), QString("SphereDrop"), QString("Dambreak"), QString("DoubleDambreak") }
+#define SimulationSceneNames { QString("SphereDrop"), QString("CubeDrop"), QString("Dambreak"), QString("DoubleDambreak") }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 class ParticleColorMode
@@ -111,6 +111,8 @@ enum class FLIPInterpolationKernel
     CubicSplineKernel
 };
 
+#define DEFAULT_BOUNDARY_RESTITUTION     0.1f
+
 #define DEFAULT_SPH_PRESSURE_STIFFNESS   50000.0f
 #define DEFAULT_SPH_NEAR_FORCE_STIFFNESS 50000.0f
 #define DEFAULT_SPH_VISCOSITY            0.05
@@ -120,7 +122,7 @@ class SimulationParameters
 public:
     SimulationParameters() { updateParams(); }
 
-    SimulationScenes::Scene scene = SimulationScenes::CubeDrop;
+    SimulationScenes::Scene scene = SimulationScenes::SphereDrop;
 
     int   numThreads      = 0;
     float stopTime        = 5.0;
@@ -138,7 +140,7 @@ public:
     bool bUseBoundaryParticles  = true;
     bool bUseAttractivePressure = false;
 
-    float boundaryRestitution     = 0.1f;
+    float boundaryRestitution     = DEFAULT_BOUNDARY_RESTITUTION;
     float attractivePressureRatio = 0.1f;
     float restDensity             = 1000.0f;
 

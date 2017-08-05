@@ -58,7 +58,11 @@ private:
 
     QLineEdit* m_txtPressureStiffness;
     QLineEdit* m_txtViscosity;
+    QLineEdit* m_txtRestitution;
     QLineEdit* m_txtStopTime;
+
+    QRadioButton* m_rbAttrPressureYes;
+    QRadioButton* m_rbAttrPressureNo;
 
     QSignalMapper* m_smParticleColorMode;
 

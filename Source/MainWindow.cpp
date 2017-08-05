@@ -32,7 +32,7 @@ MainWindow::MainWindow(QWidget* parent) : OpenGLMainWindow(parent)
     setWindowTitle("Simple Fluid Simulation");
     setFocusPolicy(Qt::StrongFocus);
     showFPS(false);
-//    showCameraPosition(false);
+    showCameraPosition(false);
 
     ////////////////////////////////////////////////////////////////////////////////
     m_Simulator = std::make_unique<Simulator>(m_RenderWidget->getParticleDataObj());
@@ -210,6 +210,8 @@ void MainWindow::connectWidgets()
     connect(m_Simulator.get(), &Simulator::simulationFinished, [&]
     {
         m_Controller->m_btnStartStopSimulation->setText(QString("Start"));
+        updateStatusSimulation("Ready");
+        m_Controller->disableParameters(false);
         m_BusyBar->reset();
     });
 

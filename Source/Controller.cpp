@@ -51,10 +51,13 @@ void Controller::setupGUI()
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 void Controller::updateSimParams(const std::shared_ptr<SimulationParameters>& simParams)
 {
-    simParams->numThreads        = m_cbNumThreads->currentIndex();
-    simParams->pressureStiffness = m_txtPressureStiffness->text().toFloat();
-    simParams->viscosity         = m_txtViscosity->text().toFloat();
-    simParams->stopTime          = m_txtStopTime->text().toFloat();
+    simParams->numThreads          = m_cbNumThreads->currentIndex();
+    simParams->pressureStiffness   = m_txtPressureStiffness->text().toFloat();
+    simParams->boundaryRestitution = m_txtRestitution->text().toFloat();
+    simParams->viscosity           = m_txtViscosity->text().toFloat();
+    simParams->stopTime            = m_txtStopTime->text().toFloat();
+
+    simParams->bUseAttractivePressure = m_rbAttrPressureYes->isChecked();
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -64,6 +67,7 @@ void Controller::disableParameters(bool disable)
     m_cbSimulationScene->setDisabled(disable);
     m_txtPressureStiffness->setDisabled(disable);
     m_txtViscosity->setDisabled(disable);
+    m_txtRestitution->setDisabled(disable);
     m_txtStopTime->setDisabled(disable);
 }
 
@@ -114,31 +118,58 @@ void Controller::setupSimulationControllers(QVBoxLayout* ctrLayout)
     m_cbSimulationScene->addItems(SimulationSceneNames);
 
     m_txtPressureStiffness = new QLineEdit;
+    m_txtPressureStiffness->setFixedWidth(100);
     m_txtPressureStiffness->setText(QString("%1").arg(DEFAULT_SPH_PRESSURE_STIFFNESS));
 
     m_txtViscosity = new QLineEdit;
+    m_txtViscosity->setFixedWidth(100);
     m_txtViscosity->setText(QString("%1").arg(DEFAULT_SPH_VISCOSITY));
 
+    m_txtRestitution = new QLineEdit;
+    m_txtRestitution->setFixedWidth(100);
+    m_txtRestitution->setText(QString("%1").arg(DEFAULT_BOUNDARY_RESTITUTION));
+
+    m_rbAttrPressureYes = new QRadioButton("Yes");
+    m_rbAttrPressureNo  = new QRadioButton("No");
+    m_rbAttrPressureNo->setChecked(true);
+    QHBoxLayout* layoutAttrPressure = new QHBoxLayout;
+    layoutAttrPressure->addWidget(m_rbAttrPressureYes);
+    layoutAttrPressure->addWidget(m_rbAttrPressureNo);
+
     m_txtStopTime = new QLineEdit;
+    m_txtStopTime->setFixedWidth(100);
     m_txtStopTime->setText("5.0");
 
     ////////////////////////////////////////////////////////////////////////////////
+    int          row                 = 0;
     QGridLayout* simControllerLayout = new QGridLayout;
-    simControllerLayout->setContentsMargins(2, 2, 2, 2);
-    simControllerLayout->addWidget(new QLabel("Num. Threads: "),       0, 0, 1, 1);
-    simControllerLayout->addWidget(m_cbNumThreads,                     0, 1, 1, 2);
+    simControllerLayout->setContentsMargins(5, 5, 5, 5);
+    simControllerLayout->addWidget(new QLabel("Num. Threads: "),        row, 0, 1, 2);
+    simControllerLayout->addWidget(m_cbNumThreads,                      row, 2, 1, 1);
 
-    simControllerLayout->addWidget(new QLabel("Scene: "),              1, 0, 1, 1);
-    simControllerLayout->addWidget(m_cbSimulationScene,                1, 1, 1, 2);
+    ++row;
+    simControllerLayout->addWidget(new QLabel("Scene: "),               row, 0, 1, 2);
+    simControllerLayout->addWidget(m_cbSimulationScene,                 row, 2, 1, 1);
 
-    simControllerLayout->addWidget(new QLabel("Pressure Stiffness: "), 2, 0, 1, 1);
-    simControllerLayout->addWidget(m_txtPressureStiffness,             2, 1, 1, 2);
+    ++row;
+    simControllerLayout->addWidget(new QLabel("Pressure Stiffness: "),  row, 0, 1, 2);
+    simControllerLayout->addWidget(m_txtPressureStiffness,              row, 2, 1, 1);
 
-    simControllerLayout->addWidget(new QLabel("Viscosity: "),          3, 0, 1, 1);
-    simControllerLayout->addWidget(m_txtViscosity,                     3, 1, 1, 2);
+    ++row;
+    simControllerLayout->addWidget(new QLabel("Viscosity: "),           row, 0, 1, 2);
+    simControllerLayout->addWidget(m_txtViscosity,                      row, 2, 1, 1);
 
-    simControllerLayout->addWidget(new QLabel("Stop time(s): "),       4, 0, 1, 1);
-    simControllerLayout->addWidget(m_txtStopTime,                      4, 1, 1, 2);
+    ++row;
+    simControllerLayout->addWidget(new QLabel("Restitution: "),         row, 0, 1, 2);
+    simControllerLayout->addWidget(m_txtRestitution,                    row, 2, 1, 1);
+
+    ++row;
+    simControllerLayout->addWidget(new QLabel("Attractive Pressure: "), row, 0, 1, 2);
+    simControllerLayout->addLayout(layoutAttrPressure, row, 2, 1, 1);
+
+    ++row;
+    simControllerLayout->addWidget(new QLabel("Stop time(s): "), row, 0, 1, 2);
+    simControllerLayout->addWidget(m_txtStopTime,                row, 2, 1, 1);
 
 
     QGroupBox* grpSimControllers = new QGroupBox;
@@ -234,7 +265,10 @@ void Controller::setupColorControllers(QBoxLayout* ctrLayout)
     m_msParticleMaterial->setDefaultCustomMaterial(true);
 
     QGridLayout* particleColorLayout = new QGridLayout;
-//    particleColorLayout->addWidget(new QLabel("Sphere View: "), 0, 0, Qt::AlignRight);
+    m_msParticleMaterial->getComboBox()->setEnabled(false);
+    connect(rdbColorUniform, &QRadioButton::clicked, [&](bool checked) { m_msParticleMaterial->getComboBox()->setEnabled(checked); });
+    connect(rdbColorRandom,  &QRadioButton::clicked, [&](bool checked) { m_msParticleMaterial->getComboBox()->setEnabled(!checked); });
+    connect(rdbColorRamp,    &QRadioButton::clicked, [&](bool checked) { m_msParticleMaterial->getComboBox()->setEnabled(!checked); });
     particleColorLayout->addLayout(m_msParticleMaterial->getLayout(), 0, 1, 1, 2);
 
     QGroupBox* particleColorGroup = new QGroupBox("Uniform Color");
