@@ -414,3 +414,87 @@ public:
         return m_W_zero;
     }
 };
+
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+template<class Real, class KernelType, unsigned int resolution = 1000u>
+class PrecomputedKernel
+{
+protected:
+    KernelType kernel;
+    Real       m_W[resolution];
+    Real       m_gradW[resolution + 1];
+    Real       m_radius;
+    Real       m_radius2;
+    Real       m_invStepSize;
+    Real       m_W_zero;
+public:
+    Real getRadius()
+    {
+        return m_radius;
+    }
+
+    void setRadius(Real val)
+    {
+        m_radius  = val;
+        m_radius2 = val * val;
+        kernel.setRadius(val);
+        const Real stepSize = m_radius / (Real)resolution;
+        m_invStepSize = 1.0 / stepSize;
+        for(unsigned int i = 0; i < resolution; i++)
+        {
+            const Real posX = stepSize * (Real)i;               // Store kernel values in the middle of an interval
+            m_W[i] = kernel.W(posX);
+            if(posX > 1.0e-6)
+                m_gradW[i] = kernel.gradW(Vec3<Real>(posX, 0.0, 0.0))[0] / posX;
+            else
+                m_gradW[i] = 0.0;
+        }
+        m_gradW[resolution] = 0.0;
+        m_W_zero            = W(0.0);
+    }
+
+public:
+    Real W(const Vec3<Real>& r)
+    {
+        Real       res = 0.0;
+        const Real r2  = glm::length2(r);
+        if(r2 <= m_radius2)
+        {
+            const Real         r   = sqrt(r2);
+            const unsigned int pos = std::min<unsigned int>((unsigned int)(r * m_invStepSize), resolution);
+            res = m_W[pos];
+        }
+        return res;
+    }
+
+    Real W(const Real r)
+    {
+        Real res = 0.0;
+        if(r <= m_radius)
+        {
+            const unsigned int pos = std::min<unsigned int>((unsigned int)(r * m_invStepSize), resolution);
+            res = m_W[pos];
+        }
+        return res;
+    }
+
+    Vec3<Real> gradW(const Vec3<Real>& r)
+    {
+        Vec3<Real> res = Vec3<Real>(0);
+        const Real r2  = glm::length2(r);
+        if(r2 <= m_radius2)
+        {
+            const Real         rl  = sqrt(r2);
+            const unsigned int pos = std::min<unsigned int>((unsigned int)(rl * m_invStepSize), resolution);
+            res = m_gradW[pos] * r;
+        }
+
+        return res;
+    }
+
+    Real W_zero()
+    {
+        return m_W_zero;
+    }
+};

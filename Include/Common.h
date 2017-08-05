@@ -103,6 +103,7 @@ inline QStringList getTextureFiles(QString texType)
 #include <Banana/Data/ParticleSystemData.h>
 #include <memory>
 #include <QVector3D>
+#include <QDebug>
 
 enum class FLIPInterpolationKernel
 {
@@ -134,8 +135,7 @@ public:
     float kernelRadius       = 1.0f / 16.0f;
 
     bool bCorrectDensity        = false;
-    bool bUseBoundaryParticles  = false;
-    bool bUseRepulsiveForce     = false;
+    bool bUseBoundaryParticles  = true;
     bool bUseAttractivePressure = false;
 
     float boundaryRestitution     = 0.1f;
@@ -143,6 +143,7 @@ public:
     float restDensity             = 1000.0f;
 
     // the following need to be computed
+    float particleMass;
     float particleRadius;
     float kernelRadiusSqr;
     float nearKernelRadius;
@@ -155,6 +156,7 @@ private:
         kernelRadiusSqr  = kernelRadius * kernelRadius;
         nearKernelRadius = particleRadius * 2.5f;
 
+        particleMass   = pow(2.0 * particleRadius, 3) * restDensity;
         restDensitySqr = restDensity * restDensity;
     }
 };

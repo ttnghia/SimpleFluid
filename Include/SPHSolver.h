@@ -58,7 +58,6 @@ private:
     void generateBoundaryParticles();
     void computeDensity();
     void correctDensity();
-    void computeRepulsiveVelocity(float timeStep);
     void addGravity(float timeStep);
     void computePressureAccelerations();
     void updateVelocity(float timeStep);
@@ -85,9 +84,11 @@ private:
         std::vector<float> density;
     } m_SimData;
 
-    CubicKernel<float> m_CubicKernel;
-    CubicKernel<float> m_SpikyKernel;
-    CubicKernel<float> m_NearSpikyKernel;
+    PrecomputedKernel<float, CubicKernel<float>, 10000> m_CubicKernel;
+    PrecomputedKernel<float, SpikyKernel<float>, 10000> m_SpikyKernel;
+    PrecomputedKernel<float, SpikyKernel<float>, 10000> m_NearSpikyKernel;
+
+    Vec_VecUInt tmpvec;
 };
 
 

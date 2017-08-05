@@ -41,13 +41,12 @@ void SPHSolver::makeReady()
     m_SimData.density.resize(m_SimData.particles.size());
 }
 
-#include <QDebug>
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 float SPHSolver::advanceFrame()
 {
-    collectParticlesToCells();
-
     float timestep = computeCFLtimeStep();
+
+    collectParticlesToCells();
     advanceVelocity(timestep);
     moveParticles(timestep);
 
@@ -59,6 +58,9 @@ void SPHSolver::collectParticlesToCells()
 {
     for(auto& cell : m_SimData.cellParticles.vec_data())
         cell.resize(0);
+
+    tmpvec.resize(0);
+    tmpvec.resize(m_SimData.particles.size());
 
     // cannot run in parallel....
     for(UInt32 p = 0, p_end = static_cast<UInt32>(m_SimData.particles.size()); p < p_end; ++p)
@@ -98,8 +100,8 @@ float SPHSolver::computeCFLtimeStep()
     float maxVel      = computeMaxVel();
     float CFLtimeStep = maxVel > 1e-8 ? cflFactor * 0.4f * (2.0f * m_SimParams->particleRadius / maxVel) : 1e10;
 
-    CFLtimeStep = fmax(CFLtimeStep, m_SimParams->defaultTimestep * 0.01f);
-    CFLtimeStep = fmin(CFLtimeStep, m_SimParams->defaultTimestep * 100.0f);
+    CFLtimeStep = fmax(CFLtimeStep, m_SimParams->defaultTimestep * 0.1f);
+    CFLtimeStep = fmin(CFLtimeStep, m_SimParams->defaultTimestep * 10.0f);
 
     return CFLtimeStep;
 }
@@ -162,8 +164,6 @@ void SPHSolver::advanceVelocity(float timeStep)
     computeDensity();
     if(m_SimParams->bCorrectDensity)
         correctDensity();
-    if(m_SimParams->bUseRepulsiveForce)
-        computeRepulsiveVelocity(timeStep);
 
     addGravity(timeStep);
     computePressureAccelerations();
@@ -203,7 +203,6 @@ void SPHSolver::moveParticles(float dt)
                                   }
                               }
 
-//                              qDebug() << p << QString::fromStdString(NumberHelpers::vecToString(pvel));
                               m_SimData.particles[p] = ppos;
                               if(velChanged)
                                   m_SimData.velocity[p] = pvel;
@@ -263,7 +262,6 @@ void SPHSolver::computeDensity()
 
 
                               ////////////////////////////////////////////////////////////////////////////////
-                              // ==> correct density for the boundary particles
                               if(m_SimParams->bUseBoundaryParticles)
                               {
                                   // => lx/ux
@@ -316,14 +314,10 @@ void SPHSolver::computeDensity()
                                           pden += m_CubicKernel.W(r);
                                       }
                                   }
-                              }
+                              } // if(m_SimParams->bUseBoundaryParticles)
 
-                              // <= end boundary density correction
                               ////////////////////////////////////////////////////////////////////////////////
-                              pden *= CUBE(2.0 * m_SimParams->particleRadius) * 1000;
-
-                              m_SimData.density[p] = pden < 1.0 ? 0 : fmin(fmax(pden, min_density), max_density);
-                              qDebug() << p << m_SimData.density[p];
+                              m_SimData.density[p] = pden < 1.0 ? 0 : fmin(fmax(pden * m_SimParams->particleMass, min_density), max_density);
                           }
                       }); // end parallel_for
 }
@@ -445,21 +439,14 @@ void SPHSolver::correctDensity()
                                           tmp += m_CubicKernel.W(r) / m_SimParams->restDensity;
                                       }
                                   }
-                              }
+                              } // if(m_SimParams->bUseBoundaryParticles)
 
-                              // <= end boundary density correction
-                              ////////////////////////////////////////////////////////////////////////////////
-
-                              tmp_density[p] = tmp > 1e-8 ? m_SimData.density[p] / fmin(tmp, max_density) : 0;
+                              tmp_density[p] = tmp > 1e-8 ? m_SimData.density[p] / fmin(tmp * m_SimParams->particleMass, max_density) : 0;
                           }
                       }); // end parallel_for
 
     std::copy(tmp_density.begin(), tmp_density.end(), m_SimData.density.begin());
 }
-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-void SPHSolver::computeRepulsiveVelocity(float timeStep)
-{}
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 void SPHSolver::addGravity(float timeStep)
@@ -491,7 +478,6 @@ void SPHSolver::computePressureAccelerations()
                           {
                               const float pden = m_SimData.density[p];
 
-                              //Vec3<float> pforce(0, 0, 0);
                               Vec3<float> pressure_accel(0, 0, 0);
 
                               if(pden < 1e-8)
@@ -529,21 +515,19 @@ void SPHSolver::computePressureAccelerations()
                                               const Vec3<float>& qpos = m_SimData.particles[q];
                                               const float qden = m_SimData.density[q];
 
+                                              if(qden < 1e-8)
+                                              {
+                                                  continue;
+                                              }
+
                                               const Vec3<float> r = qpos - ppos;
                                               if(glm::length2(r) > m_SimParams->kernelRadiusSqr)
                                               {
                                                   continue;
                                               }
 
-                                              if(qden < 1e-8)
-                                              {
-                                                  continue;
-                                              }
-
-                                              // pressure force
                                               const float qdrho = POW7(qden / m_SimParams->restDensity) - 1.0;
                                               const float qpressure = m_SimParams->bUseAttractivePressure ? fmax(qdrho, qdrho * m_SimParams->attractivePressureRatio) : fmax(qdrho, 0);
-
 
                                               const Vec3<float> pressure = (ppressure / (pden * pden) + qpressure / (qden * qden)) * m_SpikyKernel.gradW(r);
                                               pressure_accel += pressure;
@@ -611,8 +595,9 @@ void SPHSolver::computePressureAccelerations()
                                   }
                               }
                               // <= end boundary density correction
+
                               ////////////////////////////////////////////////////////////////////////////////
-                              m_SimData.pressureAcc[p] = pressure_accel * m_SimParams->pressureStiffness;
+                              m_SimData.pressureAcc[p] = pressure_accel * m_SimParams->particleMass * m_SimParams->pressureStiffness;
                               /*if(p < 1000)
                                   printf("p = %d, preacc = %f,  %f, %f\n", p, pressure_accel[0], pressure_accel[1], pressure_accel[2]);*/
                           }
@@ -645,10 +630,19 @@ void SPHSolver::computeViscosity()
                           {
                               const Vec3<float>& ppos = m_SimData.particles[p];
                               const Vec3<float>& pvel = m_SimData.velocity[p];
-                              //const float pden = density[p];
                               const Vec3i pcellId = m_SimData.m_Grid3D.getCellIdx<int>(ppos);
 
                               Vec3<float> diffuse_vel = Vec3<float>(0);
+
+                              bool check = false;
+                              if(ppos[0] < -1.0f + m_SimParams->kernelRadius &&
+                                 ppos[1] < -1.0f + m_SimParams->kernelRadius &&
+                                 ppos[2] < -1.0f + m_SimParams->kernelRadius)
+                              {
+                                  check = true;
+                              }
+
+
 
                               for(int lk = -1; lk <= 1; ++lk)
                               {
@@ -675,12 +669,14 @@ void SPHSolver::computeViscosity()
                                               const float qden = m_SimData.density[q];
                                               const Vec3<float> r = qpos - ppos;
 
+                                              Vec3<float> bk = diffuse_vel;
                                               diffuse_vel += (1.0f / qden) * (qvel - pvel) * m_CubicKernel.W(r);
                                           }
                                       }
                                   }
                               }
-                              diffusedVelocity[p] = diffuse_vel;
+
+                              diffusedVelocity[p] = diffuse_vel * m_SimParams->particleMass;
                           }
                       }); // end parallel_for
 
