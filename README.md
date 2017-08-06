@@ -4,6 +4,7 @@
 * Multi-threading by Intel TBB libary.
 * Skybox textures in folder Textures/Sky are automatically loaded at start up.
 * Press Spacebar key to pause/resume the simulation.
+* Press 'R' key to reset camera view.
 * A Prebuild has been provided to run immediately.
 * As my implementation depends on a lots of external libaries, the source code can only be compiled by me.
 
