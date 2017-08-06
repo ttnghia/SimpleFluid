@@ -105,6 +105,23 @@ void MainWindow::updateStatusSimulationTime(float time)
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+void MainWindow::finishFrame()
+{
+    ++m_FrameNumber;
+    if(m_Controller->m_chkEnableOutput->isChecked())
+        m_RenderWidget->exportScreenToImage(m_FrameNumber);
+}
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+void MainWindow::finishSimulation()
+{
+    m_Controller->m_btnStartStopSimulation->setText(QString("Start"));
+    updateStatusSimulation("Simulation Finished");
+    m_BusyBar->reset();
+    m_Controller->disableParameters(false);
+}
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 void MainWindow::setupRenderWidgets()
 {
     m_Controller = new Controller(this);
@@ -127,7 +144,7 @@ void MainWindow::setupStatusBar()
 
     m_lblStatusSimInfo = new QLabel(this);
     m_lblStatusSimInfo->setMargin(5);
-    m_lblStatusSimInfo->setText("Ready");
+    m_lblStatusSimInfo->setText("Ready (Press Space to Start/Stop)");
     statusBar()->addPermanentWidget(m_lblStatusSimInfo, 1);
 
     m_lblStatusSimTime = new QLabel(this);
@@ -177,6 +194,14 @@ void MainWindow::connectWidgets()
                 m_Simulator->changeScene(static_cast<SimulationScenes::Scene>(index));
             });
 
+    connect(m_Controller->m_cbResolution, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+            [&]()
+            {
+                m_Controller->updateSimParams(m_Simulator->getSimParams());
+                m_Simulator->changeScene(static_cast<SimulationScenes::Scene>(m_Controller->m_cbSimulationScene->currentIndex()));
+            });
+
+
     connect(m_Controller->m_btnStartStopSimulation, &QPushButton::clicked, [&]
     {
         bool isRunning = m_Simulator->isRunning();
@@ -189,30 +214,33 @@ void MainWindow::connectWidgets()
         }
         else
         {
-            m_Simulator->pause();
-            updateStatusSimulation("Paused");
+            m_Simulator->stop();
+            updateStatusSimulation("Stopped");
         }
 
-        m_Controller->m_btnStartStopSimulation->setText(!isRunning ? QString("Pause") : QString("Resume"));
+        m_Controller->m_btnStartStopSimulation->setText(!isRunning ? QString("Stop") : QString("Resume"));
         m_Controller->disableParameters(!isRunning);
         m_BusyBar->setBusy(!isRunning);
     });
 
     connect(m_Controller->m_btnResetSimulation, &QPushButton::clicked, [&]
     {
+        m_FrameNumber = 0;
         m_Simulator->reset();
         m_Controller->m_btnStartStopSimulation->setText(QString("Start"));
-        updateStatusSimulation("Ready (Press Space to Start/Pause)");
+        updateStatusSimulation("Ready (Press Space to Start/Stop)");
         m_Controller->disableParameters(false);
         m_BusyBar->reset();
     });
 
+    connect(m_Simulator.get(), &Simulator::frameFinished, [&]
+    {
+        QMetaObject::invokeMethod(this, "finishFrame", Qt::QueuedConnection);
+    });
+
     connect(m_Simulator.get(), &Simulator::simulationFinished, [&]
     {
-        m_Controller->m_btnStartStopSimulation->setText(QString("Start"));
-        updateStatusSimulation("Ready (Press Space to Start/Pause)");
-        m_Controller->disableParameters(false);
-        m_BusyBar->reset();
+        QMetaObject::invokeMethod(this, "finishSimulation", Qt::QueuedConnection);
     });
 
     connect(m_Simulator.get(), &Simulator::numParticleChanged, this,           &MainWindow::updateStatusNumParticles);

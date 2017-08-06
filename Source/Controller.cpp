@@ -51,13 +51,16 @@ void Controller::setupGUI()
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 void Controller::updateSimParams(const std::shared_ptr<SimulationParameters>& simParams)
 {
-    simParams->numThreads          = m_cbNumThreads->currentIndex();
-    simParams->pressureStiffness   = m_txtPressureStiffness->text().toFloat();
-    simParams->boundaryRestitution = m_txtRestitution->text().toFloat();
-    simParams->viscosity           = m_txtViscosity->text().toFloat();
-    simParams->stopTime            = m_txtStopTime->text().toFloat();
+    simParams->numThreads   = m_cbNumThreads->currentIndex();
+    simParams->kernelRadius = 2.0f / m_cbResolution->currentText().toFloat();
 
+    simParams->pressureStiffness      = m_txtPressureStiffness->text().toFloat();
+    simParams->boundaryRestitution    = m_txtRestitution->text().toFloat();
+    simParams->viscosity              = m_txtViscosity->text().toFloat();
+    simParams->stopTime               = m_txtStopTime->text().toFloat();
     simParams->bUseAttractivePressure = m_rbAttrPressureYes->isChecked();
+
+    simParams->updateParams();
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -65,6 +68,7 @@ void Controller::disableParameters(bool disable)
 {
     m_cbNumThreads->setDisabled(disable);
     m_cbSimulationScene->setDisabled(disable);
+    m_cbResolution->setDisabled(disable);
     m_txtPressureStiffness->setDisabled(disable);
     m_txtViscosity->setDisabled(disable);
     m_txtRestitution->setDisabled(disable);
@@ -117,13 +121,23 @@ void Controller::setupSimulationControllers(QVBoxLayout* ctrLayout)
     m_cbSimulationScene = new QComboBox;
     m_cbSimulationScene->addItems(SimulationSceneNames);
 
+    m_cbResolution = new QComboBox;
+    int resolutionIdx = 0;
+    for(int i = 8; i <= 256; i += 8)
+    {
+        if(i == DEFAULT_RESOLUTION)
+            resolutionIdx = m_cbResolution->count();
+        m_cbResolution->addItem(QString("%1").arg(i));
+    }
+    m_cbResolution->setCurrentIndex(resolutionIdx);
+
     m_txtPressureStiffness = new QLineEdit;
     m_txtPressureStiffness->setFixedWidth(100);
-    m_txtPressureStiffness->setText(QString("%1").arg(DEFAULT_SPH_PRESSURE_STIFFNESS));
+    m_txtPressureStiffness->setText(QString("%1").arg(DEFAULT_PRESSURE_STIFFNESS));
 
     m_txtViscosity = new QLineEdit;
     m_txtViscosity->setFixedWidth(100);
-    m_txtViscosity->setText(QString("%1").arg(DEFAULT_SPH_VISCOSITY));
+    m_txtViscosity->setText(QString("%1").arg(DEFAULT_VISCOSITY));
 
     m_txtRestitution = new QLineEdit;
     m_txtRestitution->setFixedWidth(100);
@@ -152,6 +166,10 @@ void Controller::setupSimulationControllers(QVBoxLayout* ctrLayout)
     simControllerLayout->addWidget(m_cbSimulationScene,                 row, 2, 1, 1);
 
     ++row;
+    simControllerLayout->addWidget(new QLabel("Resolution: "),          row, 0, 1, 2);
+    simControllerLayout->addWidget(m_cbResolution,                      row, 2, 1, 1);
+
+    ++row;
     simControllerLayout->addWidget(new QLabel("Pressure Stiffness: "),  row, 0, 1, 2);
     simControllerLayout->addWidget(m_txtPressureStiffness,              row, 2, 1, 1);
 
@@ -171,10 +189,24 @@ void Controller::setupSimulationControllers(QVBoxLayout* ctrLayout)
     simControllerLayout->addWidget(new QLabel("Stop time(s): "), row, 0, 1, 2);
     simControllerLayout->addWidget(m_txtStopTime,                row, 2, 1, 1);
 
-
     QGroupBox* grpSimControllers = new QGroupBox;
     grpSimControllers->setTitle("Simulation Parameters");
     grpSimControllers->setLayout(simControllerLayout);
+
+    ////////////////////////////////////////////////////////////////////////////////
+    QString capturePath = QDir::currentPath() + QString("/Capture/");
+    m_OutputPath = new BrowsePathWidget("Browse");
+    m_OutputPath->setPath(capturePath);
+
+    m_chkEnableOutput = new QCheckBox("Export to Images");
+
+    QVBoxLayout* layoutOutput = new QVBoxLayout;
+    layoutOutput->addWidget(m_chkEnableOutput);
+    layoutOutput->addLayout(m_OutputPath->getLayout());
+
+    QGroupBox* grpOutput = new QGroupBox;
+    grpOutput->setTitle("Output");
+    grpOutput->setLayout(layoutOutput);
 
     ////////////////////////////////////////////////////////////////////////////////
     m_btnStartStopSimulation = new QPushButton("Start");
@@ -186,6 +218,7 @@ void Controller::setupSimulationControllers(QVBoxLayout* ctrLayout)
 
     ////////////////////////////////////////////////////////////////////////////////
     ctrLayout->addWidget(grpSimControllers);
+    ctrLayout->addWidget(grpOutput);
     ctrLayout->addStretch();
     ctrLayout->addLayout(btnSimControlLayout);
 }

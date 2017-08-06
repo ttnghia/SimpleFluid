@@ -180,8 +180,8 @@ void SPHSolver::advanceVelocity(float timeStep)
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 void SPHSolver::moveParticles(float dt)
 {
-    const static Vec3<float> bMin = m_SimParams->boxMin + Vec3<float>(m_SimParams->particleRadius);
-    const static Vec3<float> bMax = m_SimParams->boxMax - Vec3<float>(m_SimParams->particleRadius);
+    const Vec3<float> bMin = m_SimParams->boxMin + Vec3<float>(m_SimParams->particleRadius);
+    const Vec3<float> bMax = m_SimParams->boxMax - Vec3<float>(m_SimParams->particleRadius);
 
     tbb::parallel_for(tbb::blocked_range<size_t>(0, m_SimData.particles.size()),
                       [&, dt](tbb::blocked_range<size_t> r)
@@ -219,14 +219,14 @@ void SPHSolver::moveParticles(float dt)
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 void SPHSolver::computeDensity()
 {
-    static const float valid_lx    = m_SimParams->boxMin[0] + m_SimParams->kernelRadius;
-    static const float valid_ux    = m_SimParams->boxMax[0] - m_SimParams->kernelRadius;
-    static const float valid_ly    = m_SimParams->boxMin[1] + m_SimParams->kernelRadius;
-    static const float valid_uy    = m_SimParams->boxMax[1] - m_SimParams->kernelRadius;
-    static const float valid_lz    = m_SimParams->boxMin[2] + m_SimParams->kernelRadius;
-    static const float valid_uz    = m_SimParams->boxMax[2] - m_SimParams->kernelRadius;
-    static const float min_density = m_SimParams->restDensity * CLAMP_THRESHOLD_DENSITY_RATIO_MIN;
-    static const float max_density = m_SimParams->restDensity * CLAMP_THRESHOLD_DENSITY_RATIO_MAX;
+    const float valid_lx    = m_SimParams->boxMin[0] + m_SimParams->kernelRadius;
+    const float valid_ux    = m_SimParams->boxMax[0] - m_SimParams->kernelRadius;
+    const float valid_ly    = m_SimParams->boxMin[1] + m_SimParams->kernelRadius;
+    const float valid_uy    = m_SimParams->boxMax[1] - m_SimParams->kernelRadius;
+    const float valid_lz    = m_SimParams->boxMin[2] + m_SimParams->kernelRadius;
+    const float valid_uz    = m_SimParams->boxMax[2] - m_SimParams->kernelRadius;
+    const float min_density = m_SimParams->restDensity * CLAMP_THRESHOLD_DENSITY_RATIO_MIN;
+    const float max_density = m_SimParams->restDensity * CLAMP_THRESHOLD_DENSITY_RATIO_MAX;
 
     tbb::parallel_for(tbb::blocked_range<size_t>(0, m_SimData.particles.size()),
                       [&](tbb::blocked_range<size_t> r)
@@ -331,12 +331,12 @@ void SPHSolver::computeDensity()
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 void SPHSolver::correctDensity()
 {
-    static const float valid_lx    = m_SimParams->boxMin[0] + m_SimParams->kernelRadius;
-    static const float valid_ux    = m_SimParams->boxMax[0] - m_SimParams->kernelRadius;
-    static const float valid_ly    = m_SimParams->boxMin[1] + m_SimParams->kernelRadius;
-    static const float valid_uy    = m_SimParams->boxMax[1] - m_SimParams->kernelRadius;
-    static const float valid_lz    = m_SimParams->boxMin[2] + m_SimParams->kernelRadius;
-    static const float valid_uz    = m_SimParams->boxMax[2] - m_SimParams->kernelRadius;
+    const float        valid_lx    = m_SimParams->boxMin[0] + m_SimParams->kernelRadius;
+    const float        valid_ux    = m_SimParams->boxMax[0] - m_SimParams->kernelRadius;
+    const float        valid_ly    = m_SimParams->boxMin[1] + m_SimParams->kernelRadius;
+    const float        valid_uy    = m_SimParams->boxMax[1] - m_SimParams->kernelRadius;
+    const float        valid_lz    = m_SimParams->boxMin[2] + m_SimParams->kernelRadius;
+    const float        valid_uz    = m_SimParams->boxMax[2] - m_SimParams->kernelRadius;
     static const float min_density = m_SimParams->restDensity * CLAMP_THRESHOLD_DENSITY_RATIO_MIN;
     static const float max_density = m_SimParams->restDensity * CLAMP_THRESHOLD_DENSITY_RATIO_MAX;
 
@@ -470,12 +470,12 @@ void SPHSolver::addGravity(float timeStep)
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 void SPHSolver::computePressureAccelerations()
 {
-    static const float valid_lx = m_SimParams->boxMin[0] + m_SimParams->kernelRadius;
-    static const float valid_ux = m_SimParams->boxMax[0] - m_SimParams->kernelRadius;
-    static const float valid_ly = m_SimParams->boxMin[1] + m_SimParams->kernelRadius;
-    static const float valid_uy = m_SimParams->boxMax[1] - m_SimParams->kernelRadius;
-    static const float valid_lz = m_SimParams->boxMin[2] + m_SimParams->kernelRadius;
-    static const float valid_uz = m_SimParams->boxMax[2] - m_SimParams->kernelRadius;
+    const float valid_lx = m_SimParams->boxMin[0] + m_SimParams->kernelRadius;
+    const float valid_ux = m_SimParams->boxMax[0] - m_SimParams->kernelRadius;
+    const float valid_ly = m_SimParams->boxMin[1] + m_SimParams->kernelRadius;
+    const float valid_uy = m_SimParams->boxMax[1] - m_SimParams->kernelRadius;
+    const float valid_lz = m_SimParams->boxMin[2] + m_SimParams->kernelRadius;
+    const float valid_uz = m_SimParams->boxMax[2] - m_SimParams->kernelRadius;
 
     tbb::parallel_for(tbb::blocked_range<size_t>(0, m_SimData.particles.size()),
                       [&](tbb::blocked_range<size_t> r)
@@ -604,8 +604,6 @@ void SPHSolver::computePressureAccelerations()
 
                               ////////////////////////////////////////////////////////////////////////////////
                               m_SimData.pressureAcc[p] = pressure_accel * m_SimParams->particleMass * m_SimParams->pressureStiffness;
-                              /*if(p < 1000)
-                                  printf("p = %d, preacc = %f,  %f, %f\n", p, pressure_accel[0], pressure_accel[1], pressure_accel[2]);*/
                           }
                       }); // end parallel_for
 }
@@ -640,16 +638,6 @@ void SPHSolver::computeViscosity()
 
                               Vec3<float> diffuse_vel = Vec3<float>(0);
 
-                              bool check = false;
-                              if(ppos[0] < -1.0f + m_SimParams->kernelRadius &&
-                                 ppos[1] < -1.0f + m_SimParams->kernelRadius &&
-                                 ppos[2] < -1.0f + m_SimParams->kernelRadius)
-                              {
-                                  check = true;
-                              }
-
-
-
                               for(int lk = -1; lk <= 1; ++lk)
                               {
                                   for(int lj = -1; lj <= 1; ++lj)
@@ -675,7 +663,11 @@ void SPHSolver::computeViscosity()
                                               const float qden = m_SimData.density[q];
                                               const Vec3<float> r = qpos - ppos;
 
-                                              Vec3<float> bk = diffuse_vel;
+                                              if(glm::length2(r) > m_SimParams->kernelRadiusSqr)
+                                              {
+                                                  continue;
+                                              }
+
                                               diffuse_vel += (1.0f / qden) * (qvel - pvel) * m_CubicKernel.W(r);
                                           }
                                       }

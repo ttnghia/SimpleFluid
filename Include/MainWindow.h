@@ -48,6 +48,8 @@ protected:
 public slots:
     void updateStatusNumParticles(unsigned int numParticles);
     void updateStatusSimulationTime(float time);
+    void finishFrame();
+    void finishSimulation();
 
 private:
     void setupRenderWidgets();
@@ -63,4 +65,6 @@ private:
     QLabel*                    m_lblStatusMemoryUsage  = nullptr;
     QLabel*                    m_lblStatusSimTime      = nullptr;
     BusyBar*                   m_BusyBar;
+
+    int m_FrameNumber = 0;
 };

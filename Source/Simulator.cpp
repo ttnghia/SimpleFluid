@@ -26,10 +26,7 @@ void Simulator::startSimulation()
     if(m_SimulationFutureObj.valid())
         m_SimulationFutureObj.wait();
 
-    m_SimulationFutureObj = std::async(std::launch::async, [&]
-    {
-        doSimulation();
-    });
+    m_SimulationFutureObj = std::async(std::launch::async, [&] { doSimulation(); });
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -46,9 +43,16 @@ void Simulator::doSimulation()
 
     while(m_SimTime < m_SimParams->stopTime && !m_bStop)
     {
-        m_SimTime += m_SPHSolver->advanceFrame();
+        float frameTime = 0;
+        while(frameTime < 0.0333333333)
+        {
+            frameTime += m_SPHSolver->advanceFrame();
+            emit particleChanged();
+        }
+
+        m_SimTime += frameTime;
         emit systemTimeChanged(m_SimTime);
-        emit particleChanged();
+        emit frameFinished();
     }
 
     if(!m_bStop)
@@ -59,16 +63,14 @@ void Simulator::doSimulation()
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-void Simulator::pause()
+void Simulator::stop()
 {
     m_bStop = true;
 }
 
 void Simulator::reset()
 {
-    m_bStop   = true;
-    m_SimTime = 0;
-
+    m_bStop = true;
     setupScene();
 }
 
@@ -82,6 +84,9 @@ void Simulator::changeScene(SimulationScenes::Scene scene)
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 void Simulator::setupScene()
 {
+    m_SimTime = 0;
+    emit systemTimeChanged(m_SimTime);
+
     // wait until the simulation stop before modifying the scene
     if(m_SimulationFutureObj.valid())
         m_SimulationFutureObj.wait();
@@ -91,6 +96,7 @@ void Simulator::setupScene()
     m_ParticleData->setNumParticles(m_SPHSolver->getNumParticles());
     m_ParticleData->setUInt("ColorRandomReady", 0);
     m_ParticleData->setUInt("ColorRampReady",   0);
+    m_ParticleData->setParticleRadius(m_SimParams->particleRadius);
 
     emit particleChanged();
     emit numParticleChanged(m_SPHSolver->getNumParticles());

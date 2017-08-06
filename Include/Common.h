@@ -111,11 +111,12 @@ enum class FLIPInterpolationKernel
     CubicSplineKernel
 };
 
-#define DEFAULT_BOUNDARY_RESTITUTION     0.1f
+#define DEFAULT_RESOLUTION           24
 
-#define DEFAULT_SPH_PRESSURE_STIFFNESS   50000.0f
-#define DEFAULT_SPH_NEAR_FORCE_STIFFNESS 50000.0f
-#define DEFAULT_SPH_VISCOSITY            0.05
+#define DEFAULT_BOUNDARY_RESTITUTION 0.1f
+#define DEFAULT_PRESSURE_STIFFNESS   50000.0f
+#define DEFAULT_NEAR_FORCE_STIFFNESS 50000.0f
+#define DEFAULT_VISCOSITY            0.05
 
 class SimulationParameters
 {
@@ -131,10 +132,10 @@ public:
     Vec3<float> boxMin = Vec3<float>(-1.0f, -1.0f, -1.0f);
     Vec3<float> boxMax = Vec3<float>(1.0f, 1.0f, 1.0f);
 
-    float pressureStiffness  = DEFAULT_SPH_PRESSURE_STIFFNESS;
-    float nearForceStiffness = DEFAULT_SPH_NEAR_FORCE_STIFFNESS;
-    float viscosity          = DEFAULT_SPH_VISCOSITY;
-    float kernelRadius       = 1.0f / 16.0f;
+    float pressureStiffness  = DEFAULT_PRESSURE_STIFFNESS;
+    float nearForceStiffness = DEFAULT_NEAR_FORCE_STIFFNESS;
+    float viscosity          = DEFAULT_VISCOSITY;
+    float kernelRadius       = 2.0f / float(DEFAULT_RESOLUTION);
 
     bool bCorrectDensity        = false;
     bool bUseBoundaryParticles  = true;
@@ -151,7 +152,6 @@ public:
     float nearKernelRadius;
     float restDensitySqr;
 
-private:
     void updateParams()
     {
         particleRadius   = kernelRadius / 4.0f;

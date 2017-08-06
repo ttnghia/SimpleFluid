@@ -127,6 +127,7 @@ private:
     void uploadParticleColorData();
     void renderParticles();
     void initParticleDataObj();
+    void initCaptureDir();
 
     ////////////////////////////////////////////////////////////////////////////////
     std::vector<std::shared_ptr<ShaderProgram> > m_ExternalShaders;

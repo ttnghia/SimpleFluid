@@ -24,6 +24,7 @@
 #include <QtAppHelpers/MaterialSelector.h>
 #include <QtAppHelpers/EnhancedComboBox.h>
 #include <QtAppHelpers/EnhancedSlider.h>
+#include <QtAppHelpers/BrowsePathWidget.h>
 #include <QtAppHelpers/PointLightEditor.h>
 
 #include "Common.h"
@@ -55,6 +56,7 @@ private:
     ////////////////////////////////////////////////////////////////////////////////
     QComboBox* m_cbNumThreads;
     QComboBox* m_cbSimulationScene;
+    QComboBox* m_cbResolution;
 
     QLineEdit* m_txtPressureStiffness;
     QLineEdit* m_txtViscosity;
@@ -72,8 +74,10 @@ private:
     EnhancedSlider*   m_sldFloorExposure;
     MaterialSelector* m_msParticleMaterial;
 
-    QPushButton* m_btnStartStopSimulation;
-    QPushButton* m_btnResetSimulation;
+    QCheckBox*        m_chkEnableOutput;
+    BrowsePathWidget* m_OutputPath;
+    QPushButton*      m_btnStartStopSimulation;
+    QPushButton*      m_btnResetSimulation;
 
     PointLightEditor* m_LightEditor;
 };

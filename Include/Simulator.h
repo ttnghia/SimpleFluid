@@ -41,14 +41,12 @@ public:
     {
         m_SPHSolver    = std::make_unique<SPHSolver>(m_ParticleData, m_SimParams);
         m_SceneManager = std::make_unique<SceneManager>(m_SimParams);
-
-        m_ParticleData->setParticleRadius(m_SimParams->particleRadius);
     }
 
     const std::shared_ptr<SimulationParameters>& getSimParams() { return m_SimParams; }
 
     bool isRunning() { return !m_bStop; }
-    void pause();
+    void stop();
     void reset();
     void startSimulation();
 
@@ -62,9 +60,7 @@ signals:
     void systemTimeChanged(float time);
     void numParticleChanged(unsigned int numParticles);
     void particleChanged();
-//    void currentFrameChanged(int currentFrame);
-//    void logChanged(const QString& logStr);
-//    void simInfoChanged(const QStringList& simInfo);
+    void frameFinished();
 
 protected:
     std::unique_ptr<tbb::task_scheduler_init> m_ThreadInit   = nullptr;

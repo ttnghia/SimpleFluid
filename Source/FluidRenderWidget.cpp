@@ -25,6 +25,7 @@ FluidRenderWidget::FluidRenderWidget(QWidget* parent) : OpenGLWidget(parent)
     setCamera(DEFAULT_CAMERA_POSITION, DEFAULT_CAMERA_FOCUS);
 
     initParticleDataObj();
+    initCaptureDir();
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -373,6 +374,16 @@ void FluidRenderWidget::initParticleDataObj()
     m_ParticleData->addArray<GLfloat, 3>("ColorRamp");
     m_ParticleData->setUInt("ColorRandomReady", 0);
     m_ParticleData->setUInt("ColorRampReady",   0);
+}
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+void FluidRenderWidget::initCaptureDir()
+{
+    QString capturePath = QDir::currentPath() + QString("/Capture/");
+    setCapturePath(capturePath);
+
+    if(!QDir(capturePath).exists())
+        QDir().mkdir(capturePath);
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
