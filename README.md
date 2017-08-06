@@ -17,9 +17,3 @@
 ![2](Captured/2.png)
 
 ![3](Captured/3.png)
-
----
-<br>
-# Video:
----
-<iframe src="https://player.vimeo.com/video/228570357" width="960" height="540" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
