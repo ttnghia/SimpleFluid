@@ -2,6 +2,7 @@
 
 * The program is implemented in Qt 5.9 framework.
 * Multi-threading by Intel TBB libary.
+* Show real-time memory usage.
 * Skybox textures in folder Textures/Sky are automatically loaded at start up.
 * Press Spacebar key to pause/resume the simulation.
 * Press 'R' key to reset camera view.
