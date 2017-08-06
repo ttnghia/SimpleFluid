@@ -35,9 +35,6 @@ HEADERS += \
     Include/MainWindow.h \
     Include/Common.h \
     Include/SPHSolver.h \
-    Include/FLIPSolver.h \
-    Include/PCGSolver.h \
-    Include/SparseMatrix.h \
     Include/Simulator.h \
     Include/SPHKernels.h \
     Include/SceneManager.h
@@ -48,7 +45,6 @@ SOURCES += \
     Source/Main.cpp \
     Source/MainWindow.cpp \
     Source/SPHSolver.cpp \
-#    Source/FLIPSolver.cpp \
     Source/Simulator.cpp \
     Source/SceneManager.cpp
 

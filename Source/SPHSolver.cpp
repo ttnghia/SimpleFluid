@@ -32,6 +32,15 @@
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 void SPHSolver::makeReady()
 {
+    m_CubicKernel.setRadius(m_SimParams->kernelRadius);
+    m_SpikyKernel.setRadius(m_SimParams->kernelRadius);
+    m_NearSpikyKernel.setRadius(1.5 * m_SimParams->particleRadius);
+    m_SimData.grid3D.setGrid(m_SimParams->boxMin, m_SimParams->boxMax, m_SimParams->kernelRadius);
+    m_SimData.cellParticles.resize(m_SimData.grid3D.getNumCells());
+
+    if(m_SimParams->bUseBoundaryParticles)
+        generateBoundaryParticles();
+
     if(m_SimData.velocity.size() != m_SimData.particles.size())
     {
         m_SimData.velocity.assign(m_SimData.velocity.size(), Vec3<float>(0));
@@ -59,13 +68,10 @@ void SPHSolver::collectParticlesToCells()
     for(auto& cell : m_SimData.cellParticles.vec_data())
         cell.resize(0);
 
-    tmpvec.resize(0);
-    tmpvec.resize(m_SimData.particles.size());
-
     // cannot run in parallel....
     for(UInt32 p = 0, p_end = static_cast<UInt32>(m_SimData.particles.size()); p < p_end; ++p)
     {
-        auto cellIdx = m_SimData.m_Grid3D.getValidCellIdx<int>(m_SimData.particles[p]);
+        auto cellIdx = m_SimData.grid3D.getValidCellIdx<int>(m_SimData.particles[p]);
         m_SimData.cellParticles(cellIdx).push_back(p);
     }
 }
@@ -228,7 +234,7 @@ void SPHSolver::computeDensity()
                           for(size_t p = r.begin(); p != r.end(); ++p)
                           {
                               const Vec3<float>& ppos = m_SimData.particles[p];
-                              const Vec3i& pcellId = m_SimData.m_Grid3D.getCellIdx<int>(ppos);
+                              const Vec3i& pcellId = m_SimData.grid3D.getCellIdx<int>(ppos);
                               float pden = m_CubicKernel.W_zero();
 
                               for(int lk = -1; lk <= 1; ++lk)
@@ -239,7 +245,7 @@ void SPHSolver::computeDensity()
                                       {
                                           const Vec3i cellId = pcellId + Vec3i(li, lj, lk);
 
-                                          if(!m_SimData.m_Grid3D.isValidCell<int>(cellId))
+                                          if(!m_SimData.grid3D.isValidCell<int>(cellId))
                                           {
                                               continue;
                                           }
@@ -343,7 +349,7 @@ void SPHSolver::correctDensity()
                           for(size_t p = r.begin(); p != r.end(); ++p)
                           {
                               const Vec3<float>& ppos = m_SimData.particles[p];
-                              const Vec3i& pcellId = m_SimData.m_Grid3D.getCellIdx<int>(ppos);
+                              const Vec3i& pcellId = m_SimData.grid3D.getCellIdx<int>(ppos);
                               float tmp = m_CubicKernel.W_zero() / m_SimData.density[p];
 
                               for(int lk = -1; lk <= 1; ++lk)
@@ -354,7 +360,7 @@ void SPHSolver::correctDensity()
                                       {
                                           const Vec3i cellId = pcellId + Vec3i(li, lj, lk);
 
-                                          if(!m_SimData.m_Grid3D.isValidCell<int>(cellId))
+                                          if(!m_SimData.grid3D.isValidCell<int>(cellId))
                                           {
                                               continue;
                                           }
@@ -490,7 +496,7 @@ void SPHSolver::computePressureAccelerations()
                               const float ppressure = m_SimParams->bUseAttractivePressure ? fmax(pdrho, pdrho * m_SimParams->attractivePressureRatio) : fmax(pdrho, 0);
 
                               const Vec3<float>& ppos = m_SimData.particles[p];
-                              const Vec3i pcellId = m_SimData.m_Grid3D.getCellIdx<int>(ppos);
+                              const Vec3i pcellId = m_SimData.grid3D.getCellIdx<int>(ppos);
 
                               for(int lk = -1; lk <= 1; ++lk)
                               {
@@ -500,7 +506,7 @@ void SPHSolver::computePressureAccelerations()
                                       {
                                           const Vec3i cellId = pcellId + Vec3i(li, lj, lk);
 
-                                          if(!m_SimData.m_Grid3D.isValidCell<int>(cellId))
+                                          if(!m_SimData.grid3D.isValidCell<int>(cellId))
                                           {
                                               continue;
                                           }
@@ -630,7 +636,7 @@ void SPHSolver::computeViscosity()
                           {
                               const Vec3<float>& ppos = m_SimData.particles[p];
                               const Vec3<float>& pvel = m_SimData.velocity[p];
-                              const Vec3i pcellId = m_SimData.m_Grid3D.getCellIdx<int>(ppos);
+                              const Vec3i pcellId = m_SimData.grid3D.getCellIdx<int>(ppos);
 
                               Vec3<float> diffuse_vel = Vec3<float>(0);
 
@@ -652,7 +658,7 @@ void SPHSolver::computeViscosity()
                                       {
                                           const Vec3i cellId = pcellId + Vec3i(li, lj, lk);
 
-                                          if(!m_SimData.m_Grid3D.isValidCell<int>(cellId))
+                                          if(!m_SimData.grid3D.isValidCell<int>(cellId))
                                           {
                                               continue;
                                           }

@@ -202,7 +202,7 @@ void MainWindow::connectWidgets()
     {
         m_Simulator->reset();
         m_Controller->m_btnStartStopSimulation->setText(QString("Start"));
-        updateStatusSimulation("Ready");
+        updateStatusSimulation("Ready (Press Space to Start/Pause)");
         m_Controller->disableParameters(false);
         m_BusyBar->reset();
     });
@@ -210,7 +210,7 @@ void MainWindow::connectWidgets()
     connect(m_Simulator.get(), &Simulator::simulationFinished, [&]
     {
         m_Controller->m_btnStartStopSimulation->setText(QString("Start"));
-        updateStatusSimulation("Ready");
+        updateStatusSimulation("Ready (Press Space to Start/Pause)");
         m_Controller->disableParameters(false);
         m_BusyBar->reset();
     });

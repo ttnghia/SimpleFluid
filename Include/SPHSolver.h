@@ -29,17 +29,7 @@ class SPHSolver : public FluidSolver
 {
 public:
     SPHSolver(std::shared_ptr<ParticleSystemData>& particleData, const std::shared_ptr<SimulationParameters>& simParams) :
-        FluidSolver(simParams), m_SimData(particleData)
-    {
-        m_CubicKernel.setRadius(simParams->kernelRadius);
-        m_SpikyKernel.setRadius(simParams->kernelRadius);
-        m_NearSpikyKernel.setRadius(1.5 * simParams->particleRadius);
-        m_SimData.m_Grid3D.setGrid(simParams->boxMin, simParams->boxMax, simParams->kernelRadius);
-        m_SimData.cellParticles.resize(m_SimData.m_Grid3D.getNumCells());
-
-        if(m_SimParams->bUseBoundaryParticles)
-            generateBoundaryParticles();
-    }
+        FluidSolver(simParams), m_SimData(particleData) {}
 
     virtual float advanceFrame() override;
     virtual void  makeReady() override;
@@ -69,7 +59,7 @@ private:
         SimData(std::shared_ptr<ParticleSystemData>& particleData) : particles(*(reinterpret_cast<Vec_Vec3<float>*>(particleData->getArray("Position")))) {}
 
         Array3_VecUInt   cellParticles;
-        Grid3D<float>    m_Grid3D;
+        Grid3D<float>    grid3D;
         Vec_Vec3<float>& particles;
         Vec_Vec3<float>  velocity;
 
@@ -87,8 +77,6 @@ private:
     PrecomputedKernel<float, CubicKernel<float>, 10000> m_CubicKernel;
     PrecomputedKernel<float, SpikyKernel<float>, 10000> m_SpikyKernel;
     PrecomputedKernel<float, SpikyKernel<float>, 10000> m_NearSpikyKernel;
-
-    Vec_VecUInt tmpvec;
 };
 
 

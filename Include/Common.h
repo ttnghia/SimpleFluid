@@ -158,7 +158,7 @@ private:
         kernelRadiusSqr  = kernelRadius * kernelRadius;
         nearKernelRadius = particleRadius * 2.5f;
 
-        particleMass   = pow(2.0 * particleRadius, 3) * restDensity;
+        particleMass   = pow(2.0 * particleRadius, 3) * restDensity * 0.9;
         restDensitySqr = restDensity * restDensity;
     }
 };

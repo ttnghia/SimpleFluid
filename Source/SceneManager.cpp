@@ -95,10 +95,12 @@ void SceneManager::setupSceneDambreak(Vec_Vec3<float>& particles, Vec_Vec3<float
 {
     Vec3<float> bMin(-1.0f, -1.0f, -1.0f);
     Vec3<float> bMax(0.4f, 0.4f, -0.5f);
-    float       spacing = 2.0f * m_SimParams->particleRadius;
-    Vec3<int>   grid((bMax[0] - bMin[0]) / spacing,
-                     (bMax[1] - bMin[1]) / spacing,
-                     (bMax[2] - bMin[2]) / spacing);
+    bMin += Vec3<float>(m_SimParams->particleRadius);
+
+    float     spacing = 2.0f * m_SimParams->particleRadius;
+    Vec3<int> grid((bMax[0] - bMin[0]) / spacing,
+                   (bMax[1] - bMin[1]) / spacing,
+                   (bMax[2] - bMin[2]) / spacing);
 
     particles.resize(0);
     for(int i = 0; i < grid[0]; ++i)
@@ -127,11 +129,12 @@ void SceneManager::setupSceneDoubleDambreak(Vec_Vec3<float>& particles, Vec_Vec3
 
     ////////////////////////////////////////////////////////////////////////////////
     // first block
-    bMin = Vec3<float>(-1.0f, -1.0f, -1.0f);
-    bMax = Vec3<float>(0.4f, 0.4f, -0.5f);
-    grid = Vec3<int>((bMax[0] - bMin[0]) / spacing,
-                     (bMax[1] - bMin[1]) / spacing,
-                     (bMax[2] - bMin[2]) / spacing);
+    bMin  = Vec3<float>(-1.0f, -1.0f, -1.0f);
+    bMax  = Vec3<float>(0.4f, 0.4f, -0.5f);
+    bMin += Vec3<float>(m_SimParams->particleRadius);
+    grid  = Vec3<int>((bMax[0] - bMin[0]) / spacing,
+                      (bMax[1] - bMin[1]) / spacing,
+                      (bMax[2] - bMin[2]) / spacing);
 
     for(int i = 0; i < grid[0]; ++i)
     {
@@ -147,11 +150,13 @@ void SceneManager::setupSceneDoubleDambreak(Vec_Vec3<float>& particles, Vec_Vec3
 
     ////////////////////////////////////////////////////////////////////////////////
     // second block
-    bMin = Vec3<float>(-0.4f, -1.0f, 0.5f);
-    bMax = Vec3<float>(1.0f, 0.4f, 1.0f);
-    grid = Vec3<int>((bMax[0] - bMin[0]) / spacing,
-                     (bMax[1] - bMin[1]) / spacing,
-                     (bMax[2] - bMin[2]) / spacing);
+    bMin  = Vec3<float>(-0.4f, -1.0f, 0.5f);
+    bMin += Vec3<float>(m_SimParams->particleRadius);
+    bMax  = Vec3<float>(1.0f, 0.4f, 1.0f);
+    bMax -= Vec3<float>(m_SimParams->particleRadius);
+    grid  = Vec3<int>((bMax[0] - bMin[0]) / spacing,
+                      (bMax[1] - bMin[1]) / spacing,
+                      (bMax[2] - bMin[2]) / spacing);
 
     for(int i = 0; i < grid[0]; ++i)
     {
