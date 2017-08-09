@@ -49,7 +49,7 @@ void Controller::setupGUI()
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-void Controller::updateSimParams(const std::shared_ptr<SimulationParameters>& simParams)
+void Controller::updateSimParams(const std::shared_ptr<SPHParameters<float> >& simParams)
 {
     simParams->numThreads   = m_cbNumThreads->currentIndex();
     simParams->kernelRadius = 2.0f / m_cbResolution->currentText().toFloat();

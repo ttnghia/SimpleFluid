@@ -28,7 +28,7 @@
 #include <tbb/tbb.h>
 
 #include "Common.h"
-#include "SPHSolver.h"
+#include "QtSPHSolver.h"
 #include "SceneManager.h"
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -39,11 +39,11 @@ class Simulator : public QObject
 public:
     Simulator(const std::shared_ptr<ParticleSystemData>& particleData) : m_ParticleData(particleData)
     {
-        m_SPHSolver    = std::make_unique<SPHSolver>(m_ParticleData, m_SimParams);
+        m_SPHSolver    = std::make_unique<QtSPHSolver>(m_ParticleData, m_SimParams);
         m_SceneManager = std::make_unique<SceneManager>(m_SimParams);
     }
 
-    const std::shared_ptr<SimulationParameters>& getSimParams() { return m_SimParams; }
+    const std::shared_ptr<SPHParameters<float> >& getSimParams() { return m_SimParams; }
 
     bool isRunning() { return !m_bStop; }
     void stop();
@@ -67,9 +67,9 @@ protected:
     volatile bool                             m_bStop        = true;
     std::shared_ptr<ParticleSystemData>       m_ParticleData = nullptr;
 
-    float                                 m_SimTime      = 0;
-    std::unique_ptr<SceneManager>         m_SceneManager = nullptr;
-    std::unique_ptr<SPHSolver>            m_SPHSolver    = nullptr;
-    std::shared_ptr<SimulationParameters> m_SimParams    = std::make_shared<SimulationParameters>();
-    std::future<void>                     m_SimulationFutureObj;
+    float                                  m_SimTime      = 0;
+    std::unique_ptr<SceneManager>          m_SceneManager = nullptr;
+    std::unique_ptr<QtSPHSolver>           m_SPHSolver    = nullptr;
+    std::shared_ptr<SPHParameters<float> > m_SimParams    = std::make_shared<SPHParameters<float> >();
+    std::future<void>                      m_SimulationFutureObj;
 };

@@ -27,6 +27,8 @@
 #include <QtAppHelpers/BrowsePathWidget.h>
 #include <QtAppHelpers/PointLightEditor.h>
 
+#include <ParticleSolvers/SPH/SPHSolver.h>
+
 #include "Common.h"
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -41,7 +43,7 @@ public:
         setupGUI();
     }
 
-    void updateSimParams(const std::shared_ptr<SimulationParameters>& simParams);
+    void updateSimParams(const std::shared_ptr<SPHParameters<float> >& simParams);
     void disableParameters(bool disable);
 
 public slots:

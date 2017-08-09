@@ -18,21 +18,19 @@
 #pragma once
 
 #include <Banana/TypeNames.h>
+#include <Banana/Array/Array3.h>
 #include <ParticleSolvers/SPH/SPHSolver.h>
+
 #include "Common.h"
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-class SceneManager
+class QtSPHSolver : public SPHSolver<float>
 {
 public:
-    SceneManager(std::shared_ptr<SPHParameters<float> >& simParams) : m_SimParams(simParams) {}
+    QtSPHSolver(std::shared_ptr<ParticleSystemData>& particleData, const std::shared_ptr<SPHParameters<float> >& simParams) :
+        SPHSolver<float>(simParams), m_SimData(particleData) {}
 
-    void setupScene(Vec_Vec3<float>& particles, Vec_Vec3<float>& velocity);
-    void setupSceneCubeDrop(Vec_Vec3<float>& particles, Vec_Vec3<float>& velocity);
-    void setupSceneSphereDrop(Vec_Vec3<float>& particles, Vec_Vec3<float>& velocity);
-    void setupSceneDambreak(Vec_Vec3<float>& particles, Vec_Vec3<float>& velocity);
-    void setupSceneDoubleDambreak(Vec_Vec3<float>& particles, Vec_Vec3<float>& velocity);
-
-private:
-    std::shared_ptr<SPHParameters<float> >& m_SimParams;
+    unsigned int     getNumParticles() { return static_cast<unsigned int>(m_SimData->particles.size()); }
+    Vec_Vec3<float>& getParticles() { return m_SimData->particles; }
+    Vec_Vec3<float>& getVelocity() { return m_SimData->velocity; }
 };

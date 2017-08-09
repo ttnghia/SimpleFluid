@@ -37,12 +37,11 @@
 #include <memory>
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-class FluidRenderWidget : public OpenGLWidget
+class FluidRenderWidget : public Banana::OpenGLWidget
 {
     Q_OBJECT
 
 public:
-
     FluidRenderWidget(QWidget* parent = 0);
 
     void setCamera(const glm::vec3& cameraPosition, const glm::vec3& cameraFocus);

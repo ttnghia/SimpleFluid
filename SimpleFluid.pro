@@ -34,17 +34,15 @@ HEADERS += \
     Include/FluidRenderWidget.h \
     Include/MainWindow.h \
     Include/Common.h \
-    Include/SPHSolver.h \
     Include/Simulator.h \
-    Include/SPHKernels.h \
-    Include/SceneManager.h
+    Include/SceneManager.h \
+    Include/QtSPHSolver.h
 
 SOURCES += \
     Source/Controller.cpp \
     Source/FluidRenderWidget.cpp \
     Source/Main.cpp \
     Source/MainWindow.cpp \
-    Source/SPHSolver.cpp \
     Source/Simulator.cpp \
     Source/SceneManager.cpp
 
